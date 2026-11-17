@@ -35,6 +35,11 @@ ColumnLayout {
 
     readonly property bool editing: ControlsService.editing
 
+    // True while the island's time travels large over this panel: the
+    // panel's own top-row time stays hidden, so the island's time is the
+    // only one. The battery in the top row stays.
+    property bool timeLarge: false
+
     spacing: ControlsService.rowGap
 
     // Escape leaves arranging first; otherwise it reaches the island, which
@@ -94,7 +99,7 @@ ColumnLayout {
                 visible: (ControlsService.topClock || ControlsService.topBattery) && !root.editing
 
                 Text {
-                    visible: ControlsService.topClock
+                    visible: ControlsService.topClock && !root.timeLarge
                     anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatDateTime(openClock.date, SettingsService.clockShowsSeconds
                         ? SettingsService.clockFormat.replace("mm", "mm:ss")

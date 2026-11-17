@@ -151,10 +151,23 @@ Rectangle {
     // The bar's limit: the whole bar, or a spread bar's room between its
     // sides, which hide instead for a panel wider than that (`Bar.crowded`).
     readonly property int panelWidth: Math.min(root.panelSize.width, root.roomForPanel)
+    // Whether the time travels large for this panel: the control centre is
+    // the "everything" view, like the hover glance, so its time moves as
+    // the glance's does. Every other panel keeps the small time in the pill
+    // band at the top.
+    readonly property bool timeLarge: islandState.openPanel === "controls"
+    // The top band the time occupies: the pill's height for most panels, the
+    // glance's height for the control centre, where the large time hangs at
+    // exactly its glance position. The panel's content starts below it.
+    readonly property int timeBandHeight: root.timeLarge ? ModuleService.summaryHeight : Theme.capsuleHeight
+    // The panel the loader is showing: the open one, or the last one while
+    // its close fade finishes. Its band keeps the fading content from
+    // jumping when the panel closes.
+    readonly property string shownPanel: islandState.openPanel !== "" ? islandState.openPanel : root.lastPanel
+    readonly property int shownBandHeight: root.shownPanel === "controls" ? ModuleService.summaryHeight : Theme.capsuleHeight
     // The island's height for a panel: the panel's own height, plus the
-    // pill's height at the top, where the time stays while the panel grows
-    // below it. The panel's content keeps its declared height.
-    readonly property int panelHeight: root.panelSize.height + Theme.capsuleHeight
+    // time's band at the top. The panel's content keeps its declared height.
+    readonly property int panelHeight: root.panelSize.height + root.timeBandHeight
 
     // One entry per layer: the capsule's size and the padding inside it.
     readonly property var layerSizes: ({
@@ -507,8 +520,10 @@ Rectangle {
             id: panelLoader
 
             anchors.fill: parent
-            // Below the time, which stays in the pill's place at the top.
-            anchors.topMargin: root.panelPad + root.notchPad + Theme.capsuleHeight
+            // Below the time: the pill's place at the top for most panels,
+            // the large time for the control centre. The shown panel's band,
+            // so a closing panel's content does not jump as it fades out.
+            anchors.topMargin: root.panelPad + root.notchPad + root.shownBandHeight
             anchors.leftMargin: root.panelPad
             anchors.rightMargin: root.panelPad
             anchors.bottomMargin: root.panelPad
@@ -544,10 +559,13 @@ Rectangle {
     // and never hidden when a panel opens: at rest the small time centred
     // in the pill, in the glance the large time at the far end, and while a
     // panel is open the small time in the pill's place at the top, the panel
-    // growing below it. It glides and grows with the island's own morph.
-    // The layers and panels below draw no time of their own.
+    // growing below it — except the control centre, where it travels large
+    // as the glance's does, the panel growing below the large time. It
+    // glides and grows with the island's own morph. The layers and panels
+    // below draw no time of their own.
     TimeTraveller {
         summary: islandState.layer === islandState.layerSummary
+            || islandState.openPanel === "controls"
         shown: islandState.layer === islandState.layerModules
             || islandState.layer === islandState.layerSummary
             || islandState.layer === islandState.layerPanel
@@ -592,6 +610,9 @@ Rectangle {
     Component {
         id: controlsPanel
         ControlsPanel {
+            // The time travels large here, so the panel's own top-row time
+            // stays hidden and the island's time is the only one.
+            timeLarge: root.timeLarge
             onClosed: root.close()
             onPanelRequested: panel => root.open(panel)
             // Settings is a window, not a panel: close the island, then pass
