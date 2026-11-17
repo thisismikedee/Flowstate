@@ -57,8 +57,6 @@ Singleton {
         { name: "game",           label: "Game mode",            description: "Shell · Turn game mode on or off" },
         { name: "layout",         label: "Window layout",        description: "Windows · Cycle the layout" },
         { name: "packages",       label: "Packages",             description: "Shell · Open the packages" },
-        { name: "clipboard",      label: "Clipboard history",    description: "Shell · Open the clipboard history" },
-        { name: "emoji",          label: "Emoji",                description: "Shell · Pick an emoji" },
         { name: "picker",         label: "Colour picker",        description: "Shell · Pick a colour off the screen" },
         { name: "capture",        label: "Capture",              description: "Shell · Open the capture surface" },
         { name: "captureRegion",  label: "Capture a region",     description: "Shell · Capture a region" },

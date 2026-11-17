@@ -587,13 +587,6 @@ Rectangle {
         id: launcherPanel
         LauncherPanel {
             onClosed: root.close()
-            // `>` lists every panel, so the launcher hands the island over the
-            // same way the control centre does.
-            onPanelRequested: panel => root.open(panel)
-            onSettingsRequested: {
-                root.close()
-                root.settingsRequested()
-            }
         }
     }
 

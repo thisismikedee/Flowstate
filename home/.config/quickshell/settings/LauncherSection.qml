@@ -188,7 +188,7 @@ SettingsSection {
         visible: root.tab === "results"
         title: Tr.t("Fallbacks")
         note: Tr.t("Rows under the applications that act on the text as typed.")
-        hint: Tr.t("Open an address, search the web, run the text as a command, or run it in a terminal that stays open. Only in the plain-text mode; a command runs as soon as its row is chosen.")
+        hint: Tr.t("Search the web, or run the text as a command. Only in the plain-text mode; a command runs as soon as its row is chosen.")
 
         SettingField {
             label: Tr.t("Web search address")
@@ -272,12 +272,13 @@ SettingsSection {
 
     // ── CLIPBOARD ───────────────────────────────────────────────────────────
     //
-    // The clipboard history is a launcher mode, so its settings live here.
+    // The clipboard history is no longer browsed from the launcher, but the
+    // watcher and its settings still live here.
 
     SettingGroup {
         visible: root.tab === "clipboard"
         title: Tr.t("Clipboard history")
-        note: Tr.t("Everything copied, searchable from the launcher.")
+        note: Tr.t("Everything copied is kept. The control centre tile shows how many entries there are and can empty it.")
         hint: Tr.t("Copies from password managers are never stored, and turning the history off stops the watcher entirely. Emptying on lock is off by default, since the lock already protects the session.")
 
         SettingRow {
