@@ -112,7 +112,7 @@ Item {
     // on the bar (`ChipFace`) and opening its detail on a click, as a bar
     // chip did. Only the ones this machine has (`ModuleService.glanceStatus`).
     Row {
-        x: root.margin + 4
+        anchors.horizontalCenter: parent.horizontalCenter
         y: (ModuleService.glanceStatusHeight - Theme.capsuleHeight) / 2
         height: Theme.capsuleHeight
         spacing: 22
