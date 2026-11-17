@@ -141,13 +141,20 @@ Rectangle {
     // A module's detail, sized from the catalogue.
     readonly property var moduleSize: ModuleService.openSize(ModuleService.openId)
 
+    // The panel most recently open, so a closing panel's content stays up
+    // while it fades out instead of swapping to the control centre.
+    property string lastPanel: "controls"
+
     readonly property var panelSize:
         root.panelSizes[islandState.openPanel] ?? root.panelSizes.controls
 
     // The bar's limit: the whole bar, or a spread bar's room between its
     // sides, which hide instead for a panel wider than that (`Bar.crowded`).
     readonly property int panelWidth: Math.min(root.panelSize.width, root.roomForPanel)
-    readonly property int panelHeight: root.panelSize.height
+    // The island's height for a panel: the panel's own height, plus the
+    // pill's height at the top, where the time stays while the panel grows
+    // below it. The panel's content keeps its declared height.
+    readonly property int panelHeight: root.panelSize.height + Theme.capsuleHeight
 
     // One entry per layer: the capsule's size and the padding inside it.
     readonly property var layerSizes: ({
@@ -309,6 +316,11 @@ Rectangle {
                 Qt.callLater(root.checkLanded)
             }
             root.lastLayer = islandState.layer
+        }
+
+        function onOpenPanelChanged(): void {
+            if (islandState.openPanel !== "")
+                root.lastPanel = islandState.openPanel
         }
     }
 
@@ -472,17 +484,6 @@ Rectangle {
                     easing.type: Theme.easing
                 }
             }
-
-            // The island's one time. It lives here, above the layer, so it
-            // is never destroyed when the layer swaps: at rest the small
-            // time centred in the pill, in the glance the large time at the
-            // far end, gliding and growing between the two on the island's
-            // own morph. The layers below draw no time of their own.
-            TimeTraveller {
-                summary: islandState.layer === islandState.layerSummary
-                shown: islandState.layer === islandState.layerModules
-                    || islandState.layer === islandState.layerSummary
-            }
         }
     }
 
@@ -506,17 +507,20 @@ Rectangle {
             id: panelLoader
 
             anchors.fill: parent
-            anchors.topMargin: root.panelPad + root.notchPad
+            // Below the time, which stays in the pill's place at the top.
+            anchors.topMargin: root.panelPad + root.notchPad + Theme.capsuleHeight
             anchors.leftMargin: root.panelPad
             anchors.rightMargin: root.panelPad
             anchors.bottomMargin: root.panelPad
-            active: islandState.expanded
-            sourceComponent: root.panelComponents[islandState.openPanel] ?? controlsPanel
+            // Stays up while the fade finishes, so a closing panel flows
+            // out instead of vanishing.
+            active: islandState.expanded || panelLoader.opacity > 0
+            sourceComponent: root.panelComponents[islandState.openPanel !== "" ? islandState.openPanel : root.lastPanel] ?? controlsPanel
             opacity: islandState.expanded ? 1 : 0
 
             Behavior on opacity {
                 enabled: root.animated
-                NumberAnimation { duration: Theme.durationMedium; easing.type: Theme.easing }
+                NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
             }
         }
     }
@@ -533,6 +537,22 @@ Rectangle {
             if (mouse.button === Qt.RightButton && islandState.openPanel === "controls")
                 ControlsService.edit(!ControlsService.editing)
         }
+    }
+
+    // The island's one time. It lives here, on the island itself above the
+    // layers and the panels, so it is never destroyed when the layer swaps
+    // and never hidden when a panel opens: at rest the small time centred
+    // in the pill, in the glance the large time at the far end, and while a
+    // panel is open the small time in the pill's place at the top, the panel
+    // growing below it. It glides and grows with the island's own morph.
+    // The layers and panels below draw no time of their own.
+    TimeTraveller {
+        summary: islandState.layer === islandState.layerSummary
+        shown: islandState.layer === islandState.layerModules
+            || islandState.layer === islandState.layerSummary
+            || islandState.layer === islandState.layerPanel
+        notchPad: root.notchPad
+        paper: root.paper
     }
 
     // ── LAYERS ──────────────────────────────────────────────────────────────

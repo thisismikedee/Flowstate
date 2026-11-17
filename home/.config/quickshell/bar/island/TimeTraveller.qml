@@ -29,8 +29,14 @@ Item {
     // True while the island shows the glance (the pointer resting on it).
     property bool summary: false
     // False while the island shows an OSD or a notification in place of the
-    // clock; a panel hides the whole capsule, this included.
+    // clock. A panel no longer hides it: the time stays put.
     property bool shown: true
+    // The island's notch offset, so the rest position is anchored to the
+    // pill band at the top rather than the island's current height.
+    property real notchPad: 0
+    // True while the island is a paper note: the ink goes dark so it reads
+    // on the light paper.
+    property bool paper: false
 
     property real morph: root.summary ? 1 : 0
 
@@ -55,6 +61,10 @@ Item {
 
     // The rest's offset when something overflowed past the sides.
     readonly property int spare: ModuleService.overflow > 0 ? ModuleService.overflowWidth : 0
+
+    // The ink: the shell's text, or the paper's dark ink on a note.
+    readonly property color ink: root.paper ? Theme.paperInk : Theme.text
+    readonly property color inkMuted: root.paper ? Theme.paperInkMuted : Theme.textMuted
 
     // The face's geometry in the glance (IslandSummary's slot), in island
     // coordinates: the slot's centre is where the large time hangs.
@@ -86,9 +96,11 @@ Item {
     readonly property real sumX: parent.width - root.margin - 4 - width
     x: root.restX + (root.sumX - root.restX) * root.morph
 
-    // Centred in the island at rest, hung from the slot's centre in the
+    // Centred in the pill band at the top at rest — anchored to the pill's
+    // own height, not the island's current height, so the time stays put
+    // while a panel grows below it. Hung from the slot's centre in the
     // glance.
-    readonly property real restY: (parent.height - height) / 2
+    readonly property real restY: (Theme.capsuleHeight + root.notchPad - height) / 2
     readonly property real sumY: root.slotCenterY - height / 2
     y: root.restY + (root.sumY - root.restY) * root.morph
 
@@ -110,7 +122,7 @@ Item {
         font.family: Theme.fontFamily
         font.pixelSize: root.hourSize
         font.weight: root.morph > 0.5 ? Font.Black : Font.DemiBold
-        color: Theme.text
+        color: root.ink
     }
 
     Text {
@@ -123,7 +135,7 @@ Item {
         font.family: Theme.fontFamily
         font.pixelSize: 20
         font.weight: Font.Black
-        color: Theme.text
+        color: root.ink
         opacity: root.morph
     }
 
@@ -137,7 +149,7 @@ Item {
         font.family: Theme.fontFamily
         font.pixelSize: 15
         font.weight: Font.Black
-        color: Theme.textMuted
+        color: root.inkMuted
         opacity: root.morph
     }
 
@@ -151,7 +163,7 @@ Item {
         text: Tr.date(clock.date, "ddd d MMM")
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeSmall
-        color: Theme.textMuted
+        color: root.inkMuted
         opacity: SettingsService.clockShowsDate ? 1 - root.morph : 0
     }
 }
