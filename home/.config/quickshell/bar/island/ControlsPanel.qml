@@ -14,6 +14,7 @@ import Quickshell
 import "../../theme"
 import "../../services"
 import "../../components"
+import "../widgets"
 import "./controls"
 
 // The control centre: a row of small buttons, when any are chosen, over a
@@ -100,6 +101,8 @@ ColumnLayout {
                 visible: (ControlsService.topClock || ControlsService.topBattery) && !root.editing
 
                 Text {
+                    id: topTime
+
                     // Hidden while the island's time is docked here, but
                     // still laid out: it reserves the time's width, so the
                     // battery keeps its place to the right of the docked
@@ -118,27 +121,75 @@ ColumnLayout {
                     color: Theme.text
                 }
 
-                Row {
+                // The battery, drawn in Liquid Glass and flown in from the
+                // centre: on Super+A it spawns around the centre of the
+                // expanded state and travels left to land beside the
+                // docked time, at the same moment the time docks — both
+                // land together in the top row, instead of the battery
+                // just appearing. The slot keeps the battery's place in
+                // the row, so the layout never shifts; only the visual
+                // inside it travels.
+                Item {
+                    id: batterySlot
+
                     visible: ControlsService.topBattery
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 4
+                    implicitWidth: batteryFly.width
+                    implicitHeight: batteryFly.height
 
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: BatteryService.icon
-                        font.family: Theme.fontMono
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.text
+                    // 0 at rest, 1 docked in the top row. Starts at 0
+                    // and is set on completion, so a freshly created
+                    // panel flies the battery in; closing the panel
+                    // drives it back to 0, so it flows back toward the
+                    // centre and fades instead of vanishing. On the
+                    // island's own morph clock, the same as the time's
+                    // slide, so the two land together.
+                    property real travel: 0
+
+                    Behavior on travel {
+                        NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
                     }
 
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: `${BatteryService.percent}%`
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontSizeMedium
-                        font.weight: Font.DemiBold
-                        font.features: { "tnum": 1 }
-                        color: Theme.text
+                    Component.onCompleted: batterySlot.travel = root.timeDocked ? 1 : 0
+
+                    // The spawn: the visual's centre on the panel's
+                    // centre. The slot's final place in the panel is
+                    // the row's left margin (4) plus the docked time
+                    // and the row's spacing; the panel is `root.width`
+                    // wide, so the offset from the slot to the centre
+                    // is the centre minus that final place, less half
+                    // the visual.
+                    readonly property real spawnX: root.width / 2 - 4 - topTime.implicitWidth
+                        - Theme.radiusMedium - batteryFly.width / 2
+
+                    // The battery and its percent, travelling as one unit.
+                    Item {
+                        id: batteryFly
+
+                        width: liquid.width + 4 + percentText.implicitWidth
+                        height: Math.max(liquid.height, percentText.implicitHeight)
+                        x: (1 - batterySlot.travel) * batterySlot.spawnX
+                        opacity: batterySlot.travel
+
+                        LiquidBattery {
+                            id: liquid
+
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                            id: percentText
+
+                            anchors.left: liquid.right
+                            anchors.leftMargin: 4
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: `${BatteryService.percent}%`
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontSizeMedium
+                            font.weight: Font.DemiBold
+                            font.features: { "tnum": 1 }
+                            color: Theme.text
+                        }
                     }
                 }
             }
