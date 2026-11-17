@@ -431,7 +431,6 @@ bind(mainMod .. " + T",         hl.dsp.global("quickshell:appearance"), { descri
 bind(mainMod .. " + SHIFT + T", hl.dsp.global("quickshell:palette"),    { description = "Shell · Open the palette" })
 bind(mainMod .. " + U",         hl.dsp.global("quickshell:stats"),      { description = "Shell · Open system statistics" })
 bind(mainMod .. " + SHIFT + P", hl.dsp.global("quickshell:pet"),        { description = "Shell · Open the pet" })
-bind(mainMod .. " + G",         hl.dsp.global("quickshell:games"),      { description = "Shell · Open the games" })
 bind(mainMod .. " + S",         hl.dsp.global("quickshell:notes"),      { description = "Shell · Open the notes" })
 bind(mainMod .. " + K",         hl.dsp.global("quickshell:board"),      { description = "Shell · Open the task board" })
 
@@ -450,10 +449,6 @@ bind(mainMod .. " + SHIFT + G", hl.dsp.global("quickshell:game"),       { descri
 
 -- · packages panel (pacman + AUR); installs run in a terminal
 bind(mainMod .. " + I",         hl.dsp.global("quickshell:packages"),   { description = "Shell · Open the packages" })
-bind(mainMod .. " + SHIFT + M", hl.dsp.global("quickshell:machines"),   { description = "Shell · Open the virtual machines" })
-bind(mainMod .. " + O",         hl.dsp.global("quickshell:servers"),    { description = "Shell · Open the development servers" })
-bind(mainMod .. " + Y",         hl.dsp.global("quickshell:screentime"), { description = "Shell · Open the screen time" })
-bind(mainMod .. " + SHIFT + W", hl.dsp.global("quickshell:camera"),     { description = "Shell · Open the camera effects" })
 
 -- · clipboard history is a launcher mode
 bind(mainMod .. " + V",         hl.dsp.global("quickshell:clipboard"),  { description = "Shell · Open the clipboard history" })

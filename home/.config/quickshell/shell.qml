@@ -52,16 +52,12 @@ ShellRoot {
         void ShortcutService.catalogue
         // Reads the user's name and face ahead of the first lock.
         void AccountService.user
-        // Counts the time in each application from the start of the session.
-        void ScreenTimeService.away
         // Registers the polkit agent, so a request is answered from the start.
         void PolkitService.asking
         // Probes for hyprpicker, so the first press is not the one that asks.
         void PickerService.available
         // Starts the clipboard watcher.
         void ClipboardService.count
-        // Reads the virtual machines, one of which may be running from before.
-        void VmService.loaded
         // Probes the monitor source, so the first take is not silent, and
         // picks up a take left running by a previous shell.
         void RecorderService.available
@@ -73,8 +69,6 @@ ShellRoot {
         void SessionService.sleepPending
         // Seeds the example profiles on a first install.
         void ProfileService.arrived
-        // Lists the virtual camera, so a call can pick it.
-        void CameraService.ready
     }
 
     // ── SCREENS ─────────────────────────────────────────────────────────────
@@ -505,12 +499,6 @@ ShellRoot {
     }
 
     GlobalShortcut {
-        name: "games"
-        description: "Open the games"
-        onPressed: root.island?.toggle("games")
-    }
-
-    GlobalShortcut {
         name: "notes"
         description: "Open the notes"
         onPressed: root.island?.toggle("notes")
@@ -609,30 +597,6 @@ ShellRoot {
         name: "packages"
         description: "Open the packages"
         onPressed: root.island?.toggle("packages")
-    }
-
-    GlobalShortcut {
-        name: "machines"
-        description: "Open the virtual machines"
-        onPressed: root.island?.toggle("machines")
-    }
-
-    GlobalShortcut {
-        name: "servers"
-        description: "Open the development servers"
-        onPressed: root.island?.toggle("servers")
-    }
-
-    GlobalShortcut {
-        name: "screentime"
-        description: "Open the screen time"
-        onPressed: root.island?.toggle("screentime")
-    }
-
-    GlobalShortcut {
-        name: "camera"
-        description: "Open the camera effects"
-        onPressed: root.island?.toggle("camera")
     }
 
     // The clipboard and the emoji are launcher modes: pressed again on that

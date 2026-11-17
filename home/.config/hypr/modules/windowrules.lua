@@ -67,7 +67,7 @@ hl.window_rule({
 })
 
 
--- · imv, a look at one picture from the desk or from yazi, floats over the
+-- · imv, a look at one picture from the desk, floats over the
 -- · layout instead of reflowing it.
 hl.window_rule({
     name  = "imv-float",

@@ -18,8 +18,8 @@ the device is watched with inotify and the processes holding it are found in
 /proc when that changes; nothing is polled. Programs that probe every camera
 (Discord does, every three seconds) open and close each one in a burst, so a
 burst is waited out, and /proc is read only when the opens and closes in it
-did not cancel. Only this user's processes can be read, which leaves out the face unlock, run as root at the
-lock screen. PipeWire and WirePlumber are reported as `pipewire`: the program
+did not cancel. Only this user's processes can be read. PipeWire and
+WirePlumber are reported as `pipewire`: the program
 behind them is a PipeWire stream, which the shell reads itself.
 """
 
@@ -49,11 +49,6 @@ def holders(devices):
             continue
         pid_dir = os.path.dirname(fd_dir)
         try:
-            # The camera effects relay the webcam to whoever reads the virtual
-            # camera; that reader is the one to name.
-            with open(os.path.join(pid_dir, "cmdline"), "rb") as source:
-                if b"camera.py" in source.read():
-                    continue
             with open(os.path.join(pid_dir, "comm"), encoding="utf-8") as source:
                 name = source.read().strip()
         except OSError:

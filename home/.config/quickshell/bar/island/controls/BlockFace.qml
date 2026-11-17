@@ -46,7 +46,6 @@ Item {
         impasto: impastoBlock,
         pet: petBlock,
         clock: clockBlock,
-        games: gamesBlock,
         notes: notesBlock,
         tasks: tasksBlock,
         session: sessionBlock,
@@ -170,14 +169,6 @@ Item {
     Component {
         id: petBlock
         PetBlock {
-            rows: root.shape.rows
-            onPanelRequested: panel => root.panelRequested(panel)
-        }
-    }
-
-    Component {
-        id: gamesBlock
-        GamesBlock {
             rows: root.shape.rows
             onPanelRequested: panel => root.panelRequested(panel)
         }

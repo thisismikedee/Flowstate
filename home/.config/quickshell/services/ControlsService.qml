@@ -48,8 +48,6 @@ Singleton {
           detail: Tr.t("The whole desk, in a window"),           panel: "" },
         { id: "pet",        icon: "󰏩", label: Tr.t("Pet"),
           detail: Tr.t("The creature living on the bar"),        panel: "pet" },
-        { id: "games",      icon: "󰊗", label: Tr.t("Games"),
-          detail: Tr.t("The arcade"),                            panel: "games" },
         { id: "notes",      icon: "󰎞", label: Tr.t("Notes"),
           detail: Tr.t("The deck of sticky notes"),              panel: "notes" },
         { id: "board",      icon: "󰄲", label: Tr.t("Task board"),
@@ -66,15 +64,9 @@ Singleton {
           detail: Tr.t("Every shortcut, on one sheet"),          panel: "keys" },
         { id: "packages",   icon: "󰏗", label: Tr.t("Packages"),
           detail: Tr.t("Updates, what is installed, the AUR"),   panel: "packages" },
-        { id: "servers",    icon: "󰒋", label: Tr.t("Servers"),
-          detail: Tr.t("The ports your projects listen on"),     panel: "servers" },
-        { id: "screentime", icon: "󰔛", label: Tr.t("Screen time"),
-          detail: Tr.t("Where the day went, app by app"),        panel: "screentime" },
-        { id: "camera",     icon: "󰄀", label: Tr.t("Camera"),
-          detail: Tr.t("Effects and reactions for your calls"),  panel: "camera" }
     ]
 
-    readonly property var defaultButtons: ["stats", "settings", "pet", "games", "notes", "board"]
+    readonly property var defaultButtons: ["stats", "settings", "pet", "notes", "board"]
 
     // The grid when nothing is chosen, which the default layout fills.
     readonly property int defaultColumns: 6
@@ -508,7 +500,6 @@ Singleton {
         { id: "impasto",       name: "impasto",       icon: "󰏘", sizes: ["1x2", "2x2", "2x4"] },
         { id: "pet",           name: "Pet",           icon: "󰏩", sizes: ["2x2", "2x3"] },
         { id: "clock",         name: "Clock",         icon: "󰥔", sizes: ["1x2", "2x2", "2x4"] },
-        { id: "games",         name: "Games",         icon: "󰊗", sizes: ["2x1", "2x2"] },
         { id: "notes",         name: "Notes",         icon: "󰎞", sizes: ["1x2", "2x2", "2x4"] },
         { id: "tasks",         name: "Tasks",         icon: "󰄲", sizes: ["1x2", "2x2", "2x3", "2x4"] },
         { id: "session",       name: "Session",       icon: "󰐥", sizes: ["1x1", "2x1", "3x1", "1x2", "2x2", "4x1"] },

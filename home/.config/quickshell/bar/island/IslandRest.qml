@@ -100,11 +100,11 @@ Item {
 
         readonly property var marks: ({
             recorder: recorderMark, privacy: privacyMark, timer: timerMark, media: mediaMark,
-            machine: machineMark, workspace: workspaceMark
+            workspace: workspaceMark
         })
         readonly property var figures: ({
             recorder: recorderFigure, privacy: privacyFigure, timer: timerFigure, media: mediaFigure,
-            machine: machineFigure, workspace: workspaceFigure
+            workspace: workspaceFigure
         })
 
         // Centred on its side, except the privacy mark split across both:
@@ -152,8 +152,6 @@ Item {
                     RecorderService.toggle()
                 else if (segment.activityId === "workspace")
                     ModuleService.togglePanel("overview")
-                else if (segment.activityId === "machine")
-                    ModuleService.togglePanel("machines")
                 else
                     ModuleService.activate(segment.activityId)
             }
@@ -312,36 +310,6 @@ Item {
                 font.family: Theme.fontMono
                 font.pixelSize: 14
                 color: Theme.indicator
-            }
-        }
-
-        // ── A VIRTUAL MACHINE ───────────────────────────────────────────────
-        //
-        // The system's mark, and how long it has run; with more than one
-        // running, how many.
-        Component {
-            id: machineMark
-
-            Text {
-                text: VmService.mark(VmService.running[0]?.os ?? "")
-                font.family: Theme.fontMono
-                font.pixelSize: Theme.fontSizeMedium
-                color: VmService.running[0]?.paused ? Theme.textMuted : Theme.text
-            }
-        }
-
-        Component {
-            id: machineFigure
-
-            Text {
-                width: Math.min(implicitWidth, ModuleService.activitySide - 2 * ModuleService.activityInset)
-                elide: Text.ElideRight
-                text: VmService.running.length > 1 ? `${VmService.running.length} ${Tr.t("running")}`
-                    : VmService.uptime(VmService.running[0]?.started ?? 0)
-                font.family: Theme.fontMono
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.DemiBold
-                color: Theme.text
             }
         }
 

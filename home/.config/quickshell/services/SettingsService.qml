@@ -650,18 +650,6 @@ Singleton {
         // light to dark. The person's, so it stays with the machine.
         property int emojiTone: 0
 
-        // ── CAMERA ──────────────────────────────────────────────────
-        //
-        // Off takes the virtual camera away from every program. Off until
-        // switched on, since a call with effects costs a core.
-        property bool cameraEnabled: false
-
-        // One of `CameraService.effects`.
-        property string cameraEffect: "natural"
-
-        // The gestures that set off a reaction, by `CameraService.reactions` id.
-        property var cameraReactions: ["thumbsup", "heart", "peace", "thumbsdown", "horns", "ok"]
-
         // ── CLIPBOARD ───────────────────────────────────────────────
         //
         // Off stops the watcher, not just the list.

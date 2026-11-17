@@ -66,14 +66,6 @@ Scope {
         return parsed !== "" ? parsed : null
     }
 
-    function machineDo(verb: string, name: string): string {
-        if (!VmService.find(name))
-            return root.fail(`no machine ${name}`)
-        if (!VmService.act(verb, name))
-            return root.fail(`busy with ${VmService.busy}, try again when it is done`)
-        return root.ok({ name: name, asked: verb })
-    }
-
     // ── STATUS ──────────────────────────────────────────────────────────────
 
     IpcHandler {
@@ -90,7 +82,6 @@ Scope {
                 notes: NotesService.count,
                 tasks: { todo: TasksService.countIn("todo"), doing: TasksService.countIn("doing"),
                          done: TasksService.countIn("done") },
-                machines: VmService.running.map(machine => machine.name),
                 palette: ThemeService.activeId,
                 wallpaper: WallpaperService.chosen,
                 layout: CompositorService.windowLayout,
@@ -252,8 +243,8 @@ Scope {
         target: "panel"
 
         readonly property var names: ["launcher", "controls", "overview", "appearance", "palette",
-            "stats", "session", "pet", "games", "notes", "board", "keys", "packages",
-            "machines", "servers", "screentime", "camera", "player", "wifi", "bluetooth", "sound", "microphone", "brightness", "nightlight", "power", "record"]
+            "stats", "session", "pet", "notes", "board", "keys", "packages",
+            "player", "wifi", "bluetooth", "sound", "microphone", "brightness", "nightlight", "power", "record"]
 
         function open(name: string): string {
             if (names.indexOf(name) < 0)
@@ -270,26 +261,6 @@ Scope {
         function list(): string {
             return root.ok({ panels: names })
         }
-    }
-
-    // ── VIRTUAL MACHINES ────────────────────────────────────────────────────
-
-    IpcHandler {
-        target: "machine"
-
-        function list(): string {
-            return root.ok({ machines: VmService.machines.map(machine => ({
-                name: machine.name, title: machine.title, running: machine.running,
-                paused: machine.paused, cores: machine.cores, memory: machine.ram
-            })) })
-        }
-
-        function start(name: string): string { return root.machineDo("start", name) }
-        function stop(name: string): string { return root.machineDo("stop", name) }
-        function kill(name: string): string { return root.machineDo("kill", name) }
-        function pause(name: string): string { return root.machineDo("pause", name) }
-        function resume(name: string): string { return root.machineDo("resume", name) }
-        function open(name: string): string { return root.machineDo("open", name) }
     }
 
     // ── MUSIC ───────────────────────────────────────────────────────────────

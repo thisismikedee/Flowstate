@@ -176,14 +176,7 @@ Usage: ./setup <command> [options]
 
   defaults    what opens which file, and dark GTK with the impasto icons
   cursors     fetch the vector cursor and build it in the chosen colour
-  spotify     patch Spotify so it takes the palette (needs spicetify)
-  vscodium    install the editor's extensions and merge its settings
   nautilus    apply the file manager's settings and sidebar
-  vesktop     tick the palette's theme in Vencord
-  face        unlock the lock screen with your face, where there is an
-              infrared camera: installs howdy-next and enrols you
-  camera      effects and gesture reactions on the webcam, for any call:
-              installs the virtual camera and the face and hand models
   splash      the boot splash: chooses the theme, adds splash to the kernel
               command line and rebuilds the initramfs (asks for a password)
 
@@ -1099,12 +1092,12 @@ verb_report() {
     if (( ${#names[@]} )); then
         say "left     the other programs' config: ${names[*]} — ./setup install --full"
     fi
-    say "left     the login screen, the PAM rules for face unlock, the boot splash — ./setup system"
+    say "left     the login screen, the boot splash — ./setup system"
     if ! { command -v hyprpm >/dev/null 2>&1 && hyprpm list 2>/dev/null | grep -qi hyprglass; }; then
         say "left     the plugins: glass on the windows, shake to find the pointer — ./setup plugins"
     fi
     names=()
-    for package in defaults cursors spotify vscodium nautilus vesktop face camera splash; do
+    for package in defaults cursors nautilus splash; do
         applied "$package" || names+=("$package")
     done
     if (( ${#names[@]} )); then
@@ -1229,11 +1222,6 @@ verb_uninstall() {
     restore system "$ROOT" '/'
     SUDO=
     if [[ -d $STATE/backups ]]; then act find "$STATE/backups" -depth -type d -empty -delete; fi
-    # The camera effects' module options, written by its verb rather than
-    # carried, since they name a module only that verb installs.
-    if [[ -f /etc/modprobe.d/impasto-camera.conf || -f /etc/modules-load.d/impasto-camera.conf ]]; then
-        act sudo rm -f /etc/modprobe.d/impasto-camera.conf /etc/modules-load.d/impasto-camera.conf
-    fi
     # The boot splash: its files went with system/, but the theme stays chosen
     # and the initramfs and grub.cfg already built still carry it.
     if command -v plymouth-set-default-theme >/dev/null && [[ $(plymouth-set-default-theme) == impasto ]]; then
@@ -1253,12 +1241,11 @@ verb_uninstall() {
 # ── EXTRAS ──────────────────────────────────────────────────────────────────
 #
 # What a copied file cannot hold: what opens which file, dark GTK, the cursor,
-# Nautilus, VSCodium, Vesktop, Spotify, face unlock, the camera effects and the
-# boot splash.
-# `install` sets each up once per machine, and one that cannot run yet is
-# skipped with the reason and tried again by the next install or update.
-# After that only its own verb runs it, so a setting changed in one of those
-# programs is kept.
+# The extras: the programs the shell themes once per machine, and the boot
+# splash. `install` sets each up once per machine, and one that cannot run
+# yet is skipped with the reason and tried again by the next install or
+# update. After that only its own verb runs it, so a setting changed in one
+# of those programs is kept.
 
 # Run on its own, a verb stops at a refusal; run from install, it says why
 # and the install carries on.
@@ -1278,18 +1265,11 @@ soft() {
 applied() { [[ -f $APPLIED/$1 ]]; }
 stamp()   { if (( ! DRY )); then mkdir -p "$APPLIED"; touch "$APPLIED/$1"; fi; }
 
-# Spotify is patched again whenever an update of the player has put the
-# unpatched xpui.spa back.
 extras() {
     applied defaults || soft defaults verb_defaults
     if [[ ! -d $CURSOR_SEED ]]; then soft cursors verb_cursors; fi
     applied nautilus || soft nautilus verb_nautilus
-    applied vscodium || soft vscodium verb_vscodium
-    applied vesktop || soft vesktop verb_vesktop
-    applied face || soft face verb_face
-    applied camera || soft camera verb_camera
     applied splash || soft splash verb_splash
-    if ! applied spotify || [[ -f /opt/spotify/Apps/xpui.spa ]]; then soft spotify verb_spotify; fi
 }
 
 # What opens which file, and whether GTK applications are dark: machine state,
@@ -1298,9 +1278,7 @@ extras() {
 # somebody chose stays chosen and is not split with ours.
 DEFAULT_APPS=(
     'imv.desktop image/jpeg image/png image/gif image/webp image/svg+xml'
-    'nvim.desktop text/plain application/json'
     'org.gnome.Nautilus.desktop inode/directory'
-    'zen.desktop text/html application/pdf x-scheme-handler/http x-scheme-handler/https'
 )
 
 # Whether mimeapps.list names a default for a type. `xdg-mime query` cannot
@@ -1372,93 +1350,6 @@ verb_cursors() {
     say 'built and set impasto-cursor'
 }
 
-# spicetify patches the colours into /opt/spotify, so the generated color.ini
-# does nothing until this runs. Not part of the palette push, which must not
-# restart the player. Also re-applies the theme after a Spotify update. The
-# first patch selects the theme; after that the choice is spicetify's.
-verb_spotify() {
-    section spotify
-    local config=${XDG_CONFIG_HOME:-$HOME/.config}
-    command -v spicetify >/dev/null || refuse 'spicetify is not installed' || return
-    [[ -f $config/spotify/prefs ]] \
-        || refuse 'open Spotify once first: spicetify needs the settings it writes' || return
-    [[ -f $config/spicetify/Themes/impasto/color.ini ]] \
-        || refuse 'no palette for Spotify yet: the shell writes one when it next themes the desk' || return
-    if [[ -n $SOFT ]] && pgrep -x spotify >/dev/null; then
-        refuse 'close Spotify first: patching it restarts it' || return
-    fi
-    if [[ ! -w /opt/spotify || ! -w /opt/spotify/Apps ]]; then
-        if (( ! DRY )) && ! ask 'spicetify patches /opt/spotify — make it writable (sudo chmod a+wr)?'; then
-            refuse '/opt/spotify is not writable: sudo chmod a+wr -R /opt/spotify' || return
-        fi
-        act sudo chmod a+wr /opt/spotify && act sudo chmod -R a+wr /opt/spotify/Apps \
-            || refuse 'could not make /opt/spotify writable' || return
-        say 'made /opt/spotify writable'
-    fi
-    # The package manager updates spicetify, and the palette push runs
-    # `spicetify refresh`, which would otherwise ask GitHub each time.
-    if ! applied spotify; then
-        act spicetify config current_theme impasto color_scheme base check_spicetify_update 0 >/dev/null \
-            || refuse 'spicetify could not select the theme' || return
-    fi
-    act spicetify apply >/dev/null 2>&1 || act spicetify backup apply || refuse 'spicetify failed' || return
-    stamp spotify
-    say ok
-}
-
-# The palette push writes the colour theme and keeps the font and palette keys
-# current; this merges the rest of settings.json. Only the extensions the look
-# is made of, from Open VSX; --force makes a re-run upgrade them.
-VSCODIUM_EXTENSIONS=(
-    pkief.material-icon-theme
-    miguelsolorio.fluent-icons
-    usernamehw.errorlens
-    oderwat.indent-rainbow
-)
-
-verb_vscodium() {
-    section vscodium
-    command -v codium >/dev/null || refuse 'vscodium is not installed' || return
-    local e missed=0
-    for e in "${VSCODIUM_EXTENSIONS[@]}"; do
-        if act codium --install-extension "$e" --force >/dev/null 2>&1; then
-            say "$e"
-        else
-            say "$e FAILED — not on Open VSX, or no network"
-            missed=1
-        fi
-    done
-    local status=0
-    act python3 "$THEME_MANAGER" apply-vscodium || status=$?
-    if (( status == 3 )); then
-        say 'left alone — switched off in Settings › Appearance › Applications'
-        return 0
-    fi
-    (( status == 0 )) || refuse 'settings.json was not merged' || return
-    say 'settings merged — the theme lands on the next window'
-    # A missed extension leaves it for the next install to try again.
-    if (( ! missed )); then stamp vscodium; fi
-}
-
-# Vencord loads only a theme ticked in its own settings. The palette push
-# writes the sheet; this ticks it, with Vesktop closed.
-verb_vesktop() {
-    section vesktop
-    command -v vesktop >/dev/null || refuse 'vesktop is not installed' || return
-    if pgrep -x vesktop >/dev/null; then
-        refuse 'close Vesktop first: Vencord rewrites its settings while it runs' || return
-    fi
-    local status=0
-    act python3 "$THEME_MANAGER" apply-vesktop || status=$?
-    if (( status == 3 )); then
-        say 'left alone — switched off in Settings › Appearance › Applications'
-        return 0
-    fi
-    (( status == 0 )) || refuse 'the theme was not ticked' || return
-    stamp vesktop
-    say 'theme ticked'
-}
-
 # Colours come from gtk.css and the right-click menu is a file in home/; the
 # rest is gsettings and the sidebar's bookmarks. A folder still handed to
 # Thunar is handed to Nautilus instead.
@@ -1479,141 +1370,6 @@ verb_nautilus() {
     fi
     stamp nautilus
     say 'settings and sidebar applied'
-}
-
-# The infrared half of a Windows Hello camera: the capture device that offers
-# 8-bit grey, by its stable /dev/v4l/by-path name when it has one.
-ir_camera() {
-    local dev link formats
-    for dev in /dev/video*; do
-        [[ -c $dev ]] || continue
-        formats=$(v4l2-ctl -d "$dev" --list-formats 2>/dev/null) || continue
-        [[ $formats == *"'GREY'"* ]] || continue
-        for link in /dev/v4l/by-path/*; do
-            if [[ $(readlink -f "$link") == "$dev" ]]; then printf '%s\n' "$link"; return 0; fi
-        done
-        printf '%s\n' "$dev"
-        return 0
-    done
-    return 1
-}
-
-# Face unlock for the lock screen: howdy-next on the infrared camera, asked
-# through the lock's own PAM service, system/etc/pam.d/impasto-face. Not in
-# packages/, since it brings opencv and only a machine with an infrared camera
-# can use it. Enrolling needs somebody in front of the camera, so an install
-# that cannot ask leaves it for this verb.
-verb_face() {
-    section 'face unlock'
-    command -v v4l2-ctl >/dev/null || refuse 'v4l2-ctl is not installed (package: v4l-utils)' || return
-    local camera
-    local -a yes=()
-    if (( NOCONFIRM )); then yes=(--noconfirm); fi
-    if ! camera=$(ir_camera); then
-        if [[ -n $SOFT ]]; then say 'skipped  no infrared camera'; return 0; fi
-        fail 'no infrared camera: face unlock needs one'
-    fi
-    [[ -f /etc/pam.d/impasto-face ]] \
-        || refuse "the lock screen's PAM service is not installed (./setup system)" || return
-    # Built without its test suite: one test races the compare process against
-    # the password prompt and fails under a parallel build, and passes alone.
-    if ! command -v howdy >/dev/null; then
-        aur_helper || refuse 'howdy-next needs an AUR helper' || return
-        act "$HELPER" -S --needed "${yes[@]}" --mflags --nocheck howdy-next \
-            || refuse 'howdy-next was not installed' || return
-        say 'installed howdy-next'
-    fi
-    act sudo howdy download-models >/dev/null || refuse 'the recognition models did not download' || return
-    # The notice is the lock screen's cue that the camera is on.
-    act sudo howdy set device_path "$camera" >/dev/null \
-        && act sudo howdy set detection_notice true >/dev/null \
-        || refuse 'howdy could not be configured' || return
-    say "camera   $camera"
-    if (( ! DRY )) && sudo howdy list >/dev/null 2>&1; then
-        say 'kept     the face already enrolled · Settings → Session adds another'
-    elif (( NOCONFIRM )) || [[ ! -t 0 ]]; then
-        refuse 'enrolling needs you in front of the camera' || return
-    elif ask 'enrol your face now? look straight at the camera'; then
-        act sudo howdy add || refuse 'no face was enrolled' || return
-    else
-        say 'skipped  enrolling · ./setup face when you want it'
-    fi
-    stamp face
-    say 'ok · lock the screen and look at it'
-}
-
-# A colour camera: one that captures, and not only 8-bit grey, which is the
-# infrared half of a face-unlock camera.
-colour_camera() {
-    local dev formats
-    for dev in /dev/video*; do
-        [[ -c $dev ]] || continue
-        [[ $(cat "/sys/class/video4linux/${dev##*/}/name" 2>/dev/null) == 'impasto camera' ]] && continue
-        formats=$(v4l2-ctl -d "$dev" --list-formats 2>/dev/null) || continue
-        grep -q "Video Capture" <<<"$formats" || continue
-        grep -o "'[A-Z0-9 ]\{4\}'" <<<"$formats" | grep -qv "'GREY'" || continue
-        printf '%s\n' "$dev"
-        return 0
-    done
-    return 1
-}
-
-CAMERA_MODELS=https://storage.googleapis.com/mediapipe-models
-CAMERA_FILES=(
-    face_landmarker/face_landmarker/float16/latest/face_landmarker.task
-    gesture_recognizer/gesture_recognizer/float16/latest/gesture_recognizer.task
-    image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite
-)
-
-# Camera effects: the webcam, filtered by camera.py, into a v4l2loopback
-# device every call program lists as "impasto camera". Not in packages/: the
-# module is built for the running kernel and MediaPipe brings opencv, so only
-# a machine with a camera gets them. The models come from Google's own
-# storage, once, into the data directory.
-verb_camera() {
-    section 'camera effects'
-    command -v v4l2-ctl >/dev/null || refuse 'v4l2-ctl is not installed (package: v4l-utils)' || return
-    local camera headers kernel
-    local -a yes=()
-    if (( NOCONFIRM )); then yes=(--noconfirm); fi
-    if ! camera=$(colour_camera); then
-        if [[ -n $SOFT ]]; then say 'skipped  no camera'; return 0; fi
-        fail 'no camera: the effects need a webcam'
-    fi
-    say "camera   $camera"
-    kernel=$(cat "/usr/lib/modules/$(uname -r)/pkgbase" 2>/dev/null) || kernel=linux
-    headers=$kernel-headers
-    act sudo pacman -S --needed "${yes[@]}" v4l2loopback-dkms "$headers" python-numpy python-opencv \
-        || refuse 'the virtual camera was not installed' || return
-    if ! python3 -c 'import mediapipe' 2>/dev/null; then
-        aur_helper || refuse 'MediaPipe needs an AUR helper' || return
-        act "$HELPER" -S --needed "${yes[@]}" python-mediapipe-bin \
-            || refuse 'MediaPipe was not installed' || return
-        say 'installed MediaPipe'
-    fi
-    # exclusive_caps: listed as a camera only while something writes to it,
-    # which camera.py does from the moment the shell starts it.
-    act sudo install -Dm644 /dev/stdin /etc/modprobe.d/impasto-camera.conf <<<'options v4l2loopback video_nr=10 card_label="impasto camera" exclusive_caps=1' \
-        && act sudo install -Dm644 /dev/stdin /etc/modules-load.d/impasto-camera.conf <<<'v4l2loopback' \
-        || refuse 'the module options were not written' || return
-    if (( ! DRY )) && ! grep -qx 'impasto camera' /sys/class/video4linux/*/name 2>/dev/null; then
-        if [[ -d /sys/module/v4l2loopback ]]; then
-            say 'note     v4l2loopback is already loaded with other options; the camera appears after a reboot'
-        else
-            act sudo modprobe v4l2loopback || say 'note     the module did not load now; it loads with the next boot'
-        fi
-    fi
-    local dir=${XDG_DATA_HOME:-$HOME/.local/share}/impasto/camera file
-    act mkdir -p "$dir"
-    for file in "${CAMERA_FILES[@]}"; do
-        [[ -s $dir/${file##*/} ]] && continue
-        act curl -fsSL -o "$dir/${file##*/}.part" "$CAMERA_MODELS/$file" \
-            && act mv "$dir/${file##*/}.part" "$dir/${file##*/}" \
-            || refuse "${file##*/} did not download" || return
-    done
-    say "models   $dir"
-    stamp camera
-    say 'ok · SUPER + SHIFT + W, and pick "impasto camera" in any call'
 }
 
 # Adds `splash` to a file of kernel command lines, on the lines that $2
@@ -1880,7 +1636,7 @@ parts() {
                 packages) note="$pacman from the repositories, $aur from the AUR" ;;
                 system)   note='sddm, unless this machine already has one' ;;
                 plugins)  note='shake to find · glass on the windows' ;;
-                extras)   note='Nautilus, VSCodium, Vesktop, Spotify, GTK, your face, the camera, the boot splash' ;;
+                extras)   note='Nautilus, GTK, the boot splash' ;;
             esac
             if (( on[i] )); then box="$ACCENT◉$OFF"; else box="$FAINT○$OFF"; fi
             if (( i == at )); then
@@ -2015,12 +1771,7 @@ main() {
         plugins)   verb_plugins ;;
         defaults)  verb_defaults ;;
         cursors)   verb_cursors ;;
-        spotify)   verb_spotify ;;
-        vscodium)  verb_vscodium ;;
         nautilus)  verb_nautilus ;;
-        vesktop)   verb_vesktop ;;
-        face)      verb_face ;;
-        camera)    verb_camera ;;
         splash)    verb_splash ;;
         report)    verb_report ;;
         files)     verb_files ;;

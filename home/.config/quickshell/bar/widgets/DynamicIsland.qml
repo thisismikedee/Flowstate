@@ -114,18 +114,9 @@ Rectangle {
         session:    { width: 720,  height: 180 },
         // A program asking for root (`PolkitService`).
         auth:       { width: 460,  height: 236 },
-        machines:   { width: 860,  height: 580 },
-        // A row per server, from two to six before it scrolls.
-        servers:    { width: ServersService.panelWidth, height: ServersService.panelHeight },
-        screentime: { width: 940,  height: 614 },
-        camera:     { width: CameraService.panelWidth, height: CameraService.panelHeight },
         player:     { width: 980,  height: 330 },
         // A row per creature, plus one for the next egg.
         pet:        { width: 560,  height: 205 + 62 * PetService.family.length },
-        // The shelf of cards, or the game being played at its own size.
-        games:      GamesService.playing !== ""
-            ? GamesService.panelSize(GamesService.playing)
-            : { width: GamesService.shelfWidth, height: GamesService.shelfHeight },
         // Declared by their services, which the panels read back for layout.
         notes:      { width: NotesService.panelWidth, height: NotesService.panelHeight },
         board:      { width: TasksService.panelWidth, height: TasksService.panelHeight },
@@ -206,13 +197,8 @@ Rectangle {
         overview: overviewPanel,
         session: sessionPanel,
         auth: authPanel,
-        machines: machinesPanel,
-        servers: serversPanel,
-        screentime: screenTimePanel,
-        camera: cameraPanel,
         player: mediaPanel,
         pet: petPanel,
-        games: gamesPanel,
         notes: notesPanel,
         board: boardPanel,
         keys: keysPanel,
@@ -696,33 +682,8 @@ Rectangle {
     }
 
     Component {
-        id: machinesPanel
-        MachinesPanel { onClosed: root.close() }
-    }
-
-    Component {
-        id: serversPanel
-        ServersPanel { onClosed: root.close() }
-    }
-
-    Component {
-        id: screenTimePanel
-        ScreenTimePanel { onClosed: root.close() }
-    }
-
-    Component {
-        id: cameraPanel
-        CameraPanel { onClosed: root.close() }
-    }
-
-    Component {
         id: petPanel
         PetPanel { onClosed: root.close() }
-    }
-
-    Component {
-        id: gamesPanel
-        GamesPanel { onClosed: root.close() }
     }
 
     Component {

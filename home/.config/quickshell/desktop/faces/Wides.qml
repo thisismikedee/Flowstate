@@ -41,7 +41,6 @@ Item {
         updates: updatesWide,
         weather: weatherWide,
         github: githubWide,
-        screentime: screenTimeWide,
         markets: marketsWide,
         stats: statsWide,
         claude: claudeWide,
@@ -1072,69 +1071,4 @@ Item {
     }
 
     // Today, and the week up to it with the average day dashed across.
-    Component {
-        id: screenTimeWide
-
-        WidgetFace {
-            ink: root.ink
-            label: Tr.t("Screen time")
-            reading: ScreenTimeService.duration(ScreenTimeService.todayTotal)
-            note: ScreenTimeService.todayNote
-
-            UsageRing {
-                anchors.fill: parent
-                anchors.margins: 4
-                parts: ScreenTimeService.todayParts
-                thickness: 5
-                accent: root.ink.accent
-                ink: root.ink.text
-            }
-            extraShare: 0.5
-
-            extra: [
-                Item {
-                    anchors.fill: parent
-
-                    UsageBars {
-                        id: weekBars
-
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.bottom: weekDays.top
-                        anchors.bottomMargin: 4
-                        stacks: ScreenTimeService.todayDigest.recent
-                        average: ScreenTimeService.todayBaseline
-                        gap: 6
-                        accent: root.ink.accent
-                        ink: root.ink.text
-                    }
-
-                    Row {
-                        id: weekDays
-
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-
-                        Repeater {
-                            model: ScreenTimeService.summary ? ScreenTimeService.summary.recent : []
-
-                            Text {
-                                required property var modelData
-
-                                width: weekBars.slot
-                                rightPadding: weekBars.gap
-                                horizontalAlignment: Text.AlignHCenter
-                                text: Tr.initial(ScreenTimeService.dateOf(modelData.date))
-                                font.family: Theme.fontFamily
-                                font.pixelSize: Theme.fontSizeLabel - 1
-                                color: root.ink.muted
-                            }
-                        }
-                    }
-                }
-            ]
-        }
-    }
 }

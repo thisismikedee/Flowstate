@@ -25,8 +25,7 @@ import "../theme"
 //
 // The password is handed straight to PAM's `respond` and never stored past
 // the field it is typed in, which every screen shares and which empties on
-// sending, on rest and on unlock. A face
-// is a second PAM conversation beside it, where `./setup face` has put howdy.
+// sending, on rest and on unlock.
 Singleton {
     id: root
 
@@ -62,17 +61,13 @@ Singleton {
             return
         root.awake = true
         root.drowse.restart()
-        root.wake()
     }
 
-    // Surfaces clear their field when this falls, and a scan under way stops.
+    // Surfaces clear their field when this falls.
     function rest(): void {
         root.drowse.stop()
         root.awake = false
         root.typed = ""
-        if (root.face.active)
-            root.face.abort()
-        root.faceScanning = false
         root.failed = false
         root.message = ""
     }
@@ -128,10 +123,6 @@ Singleton {
         root.failed = false
         root.leaving = false
         root.rest()
-        root.faceScanning = false
-        root.faceMatched = false
-        root.faceCheck.running = true
-        FaceService.refresh()
         root.shotReady = false
         root.wallpaperSource = ""
         if (SettingsService.lockMusicGround === "wallpaper") {
@@ -149,8 +140,6 @@ Singleton {
     // The screen is covered and the password is asked for.
     function engage(): void {
         root.locked = true
-        root.faceMisses = 0
-        root.faceQuietUntil = 0
         root.begin()
     }
 
@@ -271,9 +260,6 @@ Singleton {
                 root.release()
                 return
             }
-            // The face got there first; the lock is already on its way out.
-            if (root.leaving || root.faceMatched)
-                return
             root.failed = true
             root.message = result === PamResult.MaxTries
                 ? Tr.t("Too many attempts")
@@ -326,90 +312,9 @@ Singleton {
         onTriggered: root.keyboardReader.running = true
     }
 
-    // ── FACE ────────────────────────────────────────────────────────────────
-
-    // A PAM service of its own, `impasto-face`, beside the password and never
-    // inside `login`: a face that is not recognised does not count against
-    // the password's attempts, and the password never waits for the camera.
-    // Ready where `./setup system` put the service and `./setup face` put howdy,
-    // and a face has been enrolled — when the list could be read at all.
-    property bool facePam: false
-    readonly property bool faceReady: root.facePam
-        && (!FaceService.listed || FaceService.faces.length > 0)
-
-    // From howdy's first message, which is the camera coming on, until the
-    // scan ends. A refusal with nothing said first is howdy declining to look
-    // (no face enrolled, the lid shut), and shows nothing.
-    property bool faceScanning: false
-    property bool faceMatched: false
-    signal faceMissed()
-
-    // A scan starts only on an awake screen — on waking it, by a key, a click
-    // or the lid, or on the pointer while it is — never on its own: the camera would otherwise
-    // find the face that has just locked the screen.
-    // A miss rests long enough for its shake to be seen, and after three only
-    // Enter on an empty field asks again.
-    readonly property int faceRest: 1500
-    readonly property int faceIdle: 5000
-    readonly property int faceTries: 3
-    property int faceMisses: 0
-    property real faceQuietUntil: 0
-
-    // How long the ring holds a match before the lock lets go.
-    readonly property int faceHold: 650
-
-    function wake(): void {
-        if (!root.awake || root.faceMisses >= root.faceTries || Date.now() < root.faceQuietUntil)
-            return
-        root.scan()
-    }
-
-    function scan(): void {
-        if (!root.locked || !root.secure || !root.faceReady || root.leaving
-                || root.faceMatched || root.face.active)
-            return
-        root.face.start()
-    }
-
-    readonly property Process faceCheck: Process {
-        command: ["sh", "-c",
-            "test -f /etc/pam.d/impasto-face && test -f /usr/lib/security/pam_howdy.so"]
-        onExited: code => root.facePam = code === 0
-    }
-
-    readonly property PamContext face: PamContext {
-        config: "impasto-face"
-
-        onPamMessage: root.faceScanning = true
-
-        onCompleted: result => {
-            const looked = root.faceScanning
-            root.faceScanning = false
-            if (!root.locked || root.leaving || !root.awake)
-                return
-            if (result === PamResult.Success) {
-                root.faceMatched = true
-                root.faceHoldTimer.restart()
-                return
-            }
-            root.faceQuietUntil = Date.now() + (looked ? root.faceRest : root.faceIdle)
-            if (looked) {
-                root.faceMisses += 1
-                root.faceMissed()
-            }
-        }
-
-        onError: error => console.warn("PAM error while looking for a face:", error)
-    }
-
-    readonly property Timer faceHoldTimer: Timer {
-        interval: root.faceHold
-        onTriggered: root.release()
-    }
-
     // ── UNLOCKING ───────────────────────────────────────────────────────────
 
-    // Both conversations end here. The surface relaxes its blur while
+    // The password conversation ends here. The surface relaxes its blur while
     // `leaving`, and the lock falls once it has.
     function release(): void {
         if (root.leaving)
@@ -423,9 +328,6 @@ Singleton {
         onTriggered: {
             if (root.pam.active)
                 root.pam.abort()
-            if (root.face.active)
-                root.face.abort()
-            root.faceHoldTimer.stop()
             root.locked = false
             root.rest()
             root.forget()

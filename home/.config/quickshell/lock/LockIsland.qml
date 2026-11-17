@@ -1,7 +1,7 @@
 // ╭──────────────────────────────────────────────────────────────────────────╮
 // │                                                                          │
 // │   L O C K   I S L A N D                                                  │
-// │   the island on the lock · the padlock, and the face scan under it       │
+// │   the island on the lock · the padlock                                   │
 // │                                                                          │
 // │   github.com/andreumassanet/impasto                                      │
 // │                                                                          │
@@ -15,10 +15,8 @@ import "../services"
 import "../components"
 
 // The bar's island, where the bar has it and at its resting size, holding a
-// padlock. While the camera looks it grows under it with the ring round the
-// padlock; a match closes the ring and opens the padlock, a miss turns both
-// red and shakes the island. As the lock lets go the padlock gives way to the
-// bar's own time, so the island left on screen is the bar's.
+// padlock. As the lock lets go the padlock gives way to the bar's own time,
+// so the island left on screen is the bar's.
 Item {
     id: root
 
@@ -29,58 +27,19 @@ Item {
     readonly property bool attached: SettingsService.notched
     readonly property int notchPad: root.attached ? Theme.barTopMargin : 0
 
-    readonly property bool scanning: LockService.faceScanning
-    readonly property bool matched: LockService.faceMatched
-    property bool missed: false
-
-    // Back to rest as the lock lets go, so the island left is the bar's.
-    readonly property bool open: !LockService.leaving
-        && (root.scanning || root.matched || root.missed)
-
     readonly property int restWidth: ModuleService.restWidth
     readonly property int restHeight: Theme.capsuleHeight + root.notchPad
-    readonly property int openWidth: 176
-    readonly property int openHeight: 124 + root.notchPad
-
-    property real shake: 0
 
     anchors.horizontalCenter: parent.horizontalCenter
-    anchors.horizontalCenterOffset: root.shake
     y: root.attached ? 0 : Theme.barTopMargin
-    width: root.open ? root.openWidth : root.restWidth
-    height: root.open ? root.openHeight : root.restHeight
+    width: root.restWidth
+    height: root.restHeight
 
     Behavior on width {
         NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
     }
     Behavior on height {
         NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
-    }
-
-    // Red for as long as the island shakes, then back to rest.
-    Timer {
-        id: missHold
-
-        interval: Theme.durationMorph * 2
-        onTriggered: root.missed = false
-    }
-
-    SequentialAnimation {
-        id: refusal
-
-        loops: 2
-        NumberAnimation { target: root; property: "shake"; to: -10; duration: 55; easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "shake"; to: 10; duration: 55; easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "shake"; to: 0; duration: 55; easing.type: Easing.OutCubic }
-    }
-
-    Connections {
-        target: LockService
-        function onFaceMissed(): void {
-            root.missed = true
-            missHold.restart()
-            refusal.restart()
-        }
     }
 
     // ── SHAPE ───────────────────────────────────────────────────────────────
@@ -103,8 +62,7 @@ Item {
 
         anchors.fill: parent
         color: Theme.island
-        radius: root.open ? 2 * Theme.radiusLarge + 8
-                          : Math.min(root.height / 2, Theme.radiusLarge + 4)
+        radius: Math.min(root.height / 2, Theme.radiusLarge + 4)
         topLeftRadius: root.attached ? 0 : body.radius
         topRightRadius: root.attached ? 0 : body.radius
 
@@ -128,26 +86,11 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: root.notchPad / 2
 
-        FaceRing {
-            anchors.centerIn: parent
-            diameter: 72
-            scanning: root.scanning
-            closed: root.matched
-            hue: root.matched ? Theme.indicatorGood
-                : root.missed ? Theme.indicatorBad
-                : Theme.text
-            shown: root.open ? 1 : 0
-
-            Behavior on shown {
-                NumberAnimation { duration: Theme.durationMorph; easing.type: Easing.OutCubic }
-            }
-        }
-
         Padlock {
             anchors.centerIn: parent
-            scale: root.open ? 1.5 : 0.8
-            opened: root.matched || LockService.leaving
-            tint: root.missed ? Theme.indicatorBad : Theme.text
+            scale: 0.8
+            opened: LockService.leaving
+            tint: Theme.text
             opacity: root.held
 
             Behavior on scale {

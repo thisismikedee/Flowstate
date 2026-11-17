@@ -54,12 +54,10 @@ Singleton {
         { id: "notifications", name: "Notifications", bar: true,  desk: false, width: Theme.cardWidth, height: Theme.cardHeight(7, 0) },
         { id: "weather",       name: "Weather",       bar: true,  width: Theme.cardWidth, height: Theme.cardHeight(0, 50) },
         { id: "markets",       name: "Markets",       bar: true,  width: Theme.cardWidth, height: MarketsService.cardHeight },
-        { id: "screentime",    name: "Screen time",   bar: true,  width: Theme.cardWidth, height: Theme.cardHeight(4, Theme.cardRowGap + 44) },
         { id: "github",        name: "GitHub",        bar: false, width: Theme.cardWidth, height: Theme.cardHeight(0, GithubService.cardGrid) },
         { id: "stats",         name: "System",        bar: true,  width: Theme.cardWidth, height: Theme.cardHeight(2, Theme.cardRowGap + 36) },
         { id: "updates",       name: "Updates",       bar: true,  width: Theme.cardWidth, height: Theme.cardHeight(4, 0) },
         { id: "pet",           name: "Pet",           bar: true,  width: Theme.cardWidth, height: Theme.cardHeight(2, Theme.cardRowGap + 32) },
-        { id: "games",         name: "Games",         bar: false, width: Theme.cardWidth, height: Theme.cardHeight(4, 0) },
         { id: "calendar",      name: "Calendar",      bar: true,  width: 400, height: 500 },
         { id: "notes",         name: "Notes",         bar: false, width: Theme.cardWidth, height: Theme.cardHeight(4, 0) },
         { id: "tasks",         name: "Tasks",         bar: false, width: Theme.cardWidth, height: Theme.cardHeight(4, 0) },
@@ -82,13 +80,13 @@ Singleton {
     // button beside them would be the same piece without its figure. Alone in
     // a capsule, a button is drawn as a circle.
     //
-    // On the bar an id is a button before it is a module; notes and games are
-    // modules only on the desktop.
+    // On the bar an id is a button before it is a module; notes is a
+    // module only on the desktop.
     //
     // Capture is what the capture key does: the photo is taken at once, so
     // whatever the island has open is in it.
     readonly property var buttonIds: ["launcher", "overview", "controls", "capture",
-        "appearance", "notes", "board", "games", "keys", "packages", "settings", "session"]
+        "appearance", "notes", "board", "keys", "packages", "settings", "session"]
 
     readonly property var buttons: {
         const out = {}
@@ -147,11 +145,6 @@ Singleton {
                 MarketsService.subscribe()
             else
                 MarketsService.release()
-        } else if (id === "screentime") {
-            if (on)
-                ScreenTimeService.follow()
-            else
-                ScreenTimeService.unfollow()
         } else if (id === "updates") {
             if (on)
                 UpdatesService.subscribe()
@@ -221,8 +214,6 @@ Singleton {
             return WeatherService.glyph || "󰖐"
         case "markets":
             return MarketsService.glyph(MarketsService.lead)
-        case "screentime":
-            return "󰔛"
         case "updates":
             return "󰏖"
         case "notifications":
@@ -258,8 +249,6 @@ Singleton {
         case "markets":
             return MarketsService.lead
                 ? `${MarketsService.short(MarketsService.lead)} ${MarketsService.change(MarketsService.lead)}` : "—"
-        case "screentime":
-            return ScreenTimeService.short(ScreenTimeService.todayTotal)
         case "updates":
             return `${UpdatesService.count}`
         case "notifications":
@@ -384,9 +373,6 @@ Singleton {
             list.push("timer")
         if (MediaService.playing && SettingsService.beside("media"))
             list.push("media")
-        // Last of those that come and go: a machine can run for hours.
-        if (VmService.running.length > 0 && SettingsService.beside("machine"))
-            list.push("machine")
         return list
     }
 
@@ -479,13 +465,11 @@ Singleton {
             list.push("timer")
         if (MediaService.available)
             list.push("media")
-        if (VmService.running.length > 0)
-            list.push("machine")
         return list
     }
     // The face is what has the most to press: the music, then the countdown,
-    // the machine, the take, and the privacy mark, which has nothing.
-    readonly property var glanceRank: ["media", "timer", "machine", "recorder", "privacy"]
+    // the take, and the privacy mark, which has nothing.
+    readonly property var glanceRank: ["media", "timer", "recorder", "privacy"]
     readonly property string glanceFace: root.glanceRank.find(id => root.glanceRows.includes(id))
         ?? (root.summaryWeather ? "weather" : "clock")
     readonly property var glanceStrip: root.glanceRows.filter(id => id !== root.glanceFace)
@@ -521,8 +505,6 @@ Singleton {
             return { width: item.width, height: Theme.cardHeight(Math.min(3, UpdatesService.updates.length) + 1, 0) }
         if (id === "devices")
             return { width: item.width, height: Theme.cardHeight(Math.max(1, DeviceService.devices.length), 0) }
-        if (id === "games")
-            return { width: item.width, height: Theme.cardHeight(Math.min(3, GamesService.ranked.length) + 1, 0) }
         if (id === "notes")
             return { width: item.width, height: Theme.cardHeight(Math.min(3, NotesService.live.length) + 1, 0) }
         if (id === "tasks")
@@ -582,7 +564,7 @@ Singleton {
         root.peekText = ""
     }
 
-    // A module asking for a panel, e.g. the games detail opening the arcade.
+    // A module asking for a panel.
     signal panelRequested(string panel)
 
     function requestPanel(panel: string): void {
@@ -651,9 +633,6 @@ Singleton {
         case "netspeed":
             // The sampler runs from boot (shell.qml touches it).
             return true
-        case "screentime":
-            // Recording from boot; an empty day still reads 0:00.
-            return true
         case "updates":
             // False on a machine with neither checkupdates nor pacman.
             return UpdatesService.available
@@ -661,8 +640,6 @@ Singleton {
             // `ready` is constant true; reading it builds the service, and
             // the service's trickle runs while the pet is on the bar.
             return PetService.ready
-        case "games":
-            return GamesService.ready
         case "notes":
             return NotesService.ready
         case "tasks":

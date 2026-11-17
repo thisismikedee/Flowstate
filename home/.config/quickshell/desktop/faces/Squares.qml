@@ -40,14 +40,12 @@ Item {
         updates: updatesSquare,
         weather: weatherSquare,
         github: githubSquare,
-        screentime: screenTimeSquare,
         markets: marketsSquare,
         stats: statsSquare,
         claude: claudeSquare,
         codex: codexSquare,
         timer: timerSquare,
         pet: petSquare,
-        games: gamesSquare,
         media: mediaSquare,
         clock: clockSquare,
         calendar: calendarSquare,
@@ -312,34 +310,6 @@ Item {
         }
     }
 
-    Component {
-        id: gamesSquare
-
-        WidgetFace {
-
-            ink: root.ink
-            readonly property var last: GamesService.entry(GamesService.lastPlayed)
-
-            label: Tr.t("Games")
-            reading: last ? `${GamesService.bestOf(last.id)}` : "—"
-            note: last ? `${last.name} · ${Tr.t("best")}` : Tr.t("Nothing played yet")
-
-            RingIndicator {
-                anchors.fill: parent
-                thickness: 3
-                progress: 0
-                trackColor: root.ink.dim
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰊗"
-                    font.family: Theme.fontMono
-                    font.pixelSize: 18
-                    color: root.ink.text
-                }
-            }
-        }
-    }
 
     Component {
         id: petSquare
@@ -601,23 +571,4 @@ Item {
     }
 
     // Today's total, the ring split by group, and the most used under it.
-    Component {
-        id: screenTimeSquare
-
-        WidgetFace {
-            ink: root.ink
-            label: Tr.t("Screen time")
-            reading: ScreenTimeService.duration(ScreenTimeService.todayTotal)
-            note: ScreenTimeService.todayNote
-
-            UsageRing {
-                anchors.fill: parent
-                anchors.margins: 4
-                parts: ScreenTimeService.todayParts
-                thickness: 5
-                accent: root.ink.accent
-                ink: root.ink.text
-            }
-        }
-    }
 }

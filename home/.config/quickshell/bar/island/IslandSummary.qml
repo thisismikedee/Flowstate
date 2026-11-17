@@ -49,13 +49,6 @@ Item {
         { on: PrivacyService.cameraOn,   glyph: "󰄀", tint: Theme.privacyCamera },
         { on: PrivacyService.screen,     glyph: "󰍹", tint: Theme.privacyScreen }
     ].filter(mark => mark.on)
-    // The first machine running, and what it is doing.
-    readonly property var machine: VmService.running[0] ?? null
-    readonly property string machineState: !root.machine ? ""
-        : root.machine.paused ? Tr.t("Paused")
-        : [Tr.t("Running"), VmService.uptime(root.machine.started),
-           VmService.running.length > 1 ? `${VmService.running.length} ${Tr.t("running")}` : ""]
-            .filter(part => part !== "").join(" · ")
 
     readonly property string privacyName: Tr.t(PrivacyService.microphone ? "Microphone"
         : PrivacyService.cameraOn ? "Camera" : "Screen")
@@ -68,13 +61,11 @@ Item {
         ? (LyricsService.currentText !== "" ? LyricsService.currentText : "♪") : ""
 
     // What a mark does at rest, for the square and the chips alike: the
-    // take stops, the machine opens its panel, the rest open their detail
+    // take stops, the rest open their detail
     // — the music's opens out round its lyrics when it has them.
     function press(id: string): void {
         if (id === "recorder")
             RecorderService.stop()
-        else if (id === "machine")
-            ModuleService.togglePanel("machines")
         else
             ModuleService.activate(id)
     }
@@ -87,8 +78,6 @@ Item {
             return TimerService.label || Tr.t("Timer")
         case "recorder":
             return Tr.t("Recording")
-        case "machine":
-            return root.machine?.title ?? ""
         case "privacy":
             return root.privacyName
         case "weather":
@@ -106,8 +95,6 @@ Item {
             return TimerService.display
         case "recorder":
             return `${Tr.t(RecorderService.subject)} · ${RecorderService.display}`
-        case "machine":
-            return root.machineState
         case "privacy":
             return PrivacyService.who
         case "weather":
@@ -182,12 +169,6 @@ Item {
             height: width
             radius: width / 2
             color: Theme.indicatorBad
-        }
-
-        Glyph {
-            visible: root.face === "machine"
-            text: VmService.mark(root.machine?.os ?? "")
-            font.pixelSize: Math.round(slot.width * 0.82)
         }
 
         Glyph {
@@ -282,7 +263,7 @@ Item {
         Row {
             id: controls
 
-            visible: ["media", "timer", "machine", "recorder"].includes(root.face)
+            visible: ["media", "timer", "recorder"].includes(root.face)
             spacing: 8
 
             Control {
@@ -328,28 +309,6 @@ Item {
                 glyph: "󰅖"
                 size: 17
                 onPressed: TimerService.cancel()
-            }
-
-            Control {
-                visible: root.face === "machine"
-                glyph: "󰍹"
-                size: 17
-                onPressed: VmService.open(root.machine?.name ?? "")
-            }
-
-            Control {
-                visible: root.face === "machine"
-                glyph: root.machine?.paused ? "󰐊" : "󰏤"
-                size: 22
-                onPressed: root.machine?.paused ? VmService.resume(root.machine.name)
-                                                : VmService.pause(root.machine?.name ?? "")
-            }
-
-            Control {
-                visible: root.face === "machine"
-                glyph: "󰐥"
-                size: 17
-                onPressed: VmService.stop(root.machine?.name ?? "")
             }
 
             Control {
@@ -516,15 +475,6 @@ Item {
                             progress: TimerService.progress
                             trackColor: Theme.indicatorDim
                             fillColor: TimerService.tint
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            visible: chip.modelData === "machine"
-                            text: VmService.mark(root.machine?.os ?? "")
-                            font.family: Theme.fontMono
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.text
                         }
                     }
 

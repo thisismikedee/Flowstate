@@ -1,3 +1,27 @@
+# A fork of Impasto, for one laptop
+
+This is Michael's fork of [Impasto](https://github.com/andreumassanet/impasto)
+(GPL-3.0, by Andreu Massanet) — the same shell, stripped to its core so it can
+grow into his own: a minimal floating-pill island that morphs in place into the
+launcher, control centre, notifications, OSDs, power menu, lock screen,
+theme/wallpaper pickers and calendar, then collapses back. Upstream is kept as
+the `upstream` remote, so its fixes can still be pulled in by hand when wanted.
+There is no GitHub remote yet — publishing this under his name needs his
+GitHub account connected first.
+
+What was stripped, and why: the bundled off-the-shelf programs that are
+someone else's taste, not part of the shell — the editors (neovim and its
+plugins), the Zen browser, the Vesktop chat client, Spotify and its theming,
+face unlock (howdy) and the camera effects, the games arcade, screen-time
+tracking, and the virtual-machine and server panels. The shell itself, the
+Hyprland config, the lock screen, the login screen, the boot splash and the
+setup script's shell-only install path are untouched. Kept on purpose because
+the shell calls on them: kitty (the terminal the launcher and the package
+window open), fastfetch (the terminal greeting), imv (pictures from the photo
+widget and the launcher), cava (the bar's audio visualiser), Nautilus and its
+right-click menu, and the update-status panel. The polkit prompt stays a
+separate trusted window, styled to match — it is not part of the island.
+
 <p align="center">
   <img src=".github/assets/banner.jpg" alt="impasto — the island, become the mark, over a painting of Mount Fuji" width="100%">
 </p>
@@ -38,9 +62,8 @@
 The name is the technique the wallpapers are painted in: paint laid on thick
 enough to keep the mark of the brush. It is a shell first and a dotfiles
 repository second — `home/.config/quickshell` is most of the code, and the rest
-of `home/` is the desk around it: the terminal, the prompt, two editors, two
-file managers, a browser, a chat client, the login screen. **Change the
-wallpaper and all of it follows.**
+of `home/` is the desk around it: the terminal, the prompt, the file manager,
+the login screen. **Change the wallpaper and all of it follows.**
 
 ## The island
 
@@ -50,8 +73,8 @@ wallpaper and all of it follows.**
 
 **The island is one object that changes shape.** A black capsule in the middle
 of the bar rests on the time and turns into everything else: the glance under
-the pointer, the control centre, the launcher, the overview, a notification, a
-game — each the size of what is in it, with no title and no close button. What
+the pointer, the control centre, the launcher, the overview, a notification
+— each the size of what is in it, with no title and no close button. What
 is running sits either side of the time — a countdown, the track, or whatever
 is using the microphone, the camera or the screen — and every module on the bar
 opens into the island rather than into a popup of its own. A notification
@@ -91,9 +114,9 @@ monitor over DDC/CI.
 </p>
 
 **The palette comes out of the painting.** Pick a wallpaper and its colours
-reach everything at once: the island and the widgets, the terminal, neovim,
-VSCodium, the GTK and Qt windows, Nautilus down to its folders, Vesktop, Zen
-and Spotify. Thirty-three paintings come with it, and a video can be the wallpaper
+reach everything at once: the island and the widgets, the terminal, the GTK
+and Qt windows and Nautilus down to its folders. Thirty-three paintings come
+with it, and a video can be the wallpaper
 too.
 
 **Any module can live on the wallpaper**, on a grid, in four shapes, drawn in
@@ -113,18 +136,17 @@ the painting at their edges too.
 ## Everything else, in the island
 
 <p align="center">
-  <img src=".github/assets/panels.jpg" alt="Six panels of the island: notes in handwriting on pastel paper, Tetris, the task board with three lanes, a day of screen time by app, the virtual machine catalogue, and the local servers listening with their ports" width="100%">
+  <img src=".github/assets/panels.jpg" alt="Panels of the island: notes in handwriting on pastel paper and the task board with three lanes" width="100%">
 </p>
 
-**Every tool is a panel of the island**, not a window: notes, tasks, eleven
-games, screen time, virtual machines, the servers you have running, your
-packages and effects for the webcam in any call. A pet lives on the bar, and
+**Every tool is a panel of the island**, not a window: notes, tasks and your
+packages. A pet lives on the bar, and
 <kbd>SUPER</kbd> <kbd>H</kbd> lists the key for each.
 
 ## Lock and login
 
 <p align="center">
-  <img src=".github/assets/lock.gif" alt="The lock screen over the blurred cover of the track playing, the lyrics moving line by line beside the cover, then a touch: a ring turns round the padlock, closes green, and the blur lifts off the desk" width="100%">
+  <img src=".github/assets/lock.gif" alt="The lock screen over the blurred cover of the track playing, the lyrics moving line by line beside the cover, then a touch: the padlock opens and the blur lifts off the desk" width="100%">
 </p>
 
 **The lock shows what is playing**: the cover blurred behind it and the
@@ -154,7 +176,7 @@ up the login screen, the plugins and the programs around the shell. Run
 | `--skip-packages` | install nothing; copy and build only |
 | `--skip-system` | leave `/` alone — no login screen, no printing, and no password for it |
 | `--skip-plugins` | no shake to find, no glass |
-| `--skip-extras` | leave Nautilus, VSCodium, Vesktop, Spotify, GTK, face unlock, the camera and the boot splash alone |
+| `--skip-extras` | leave Nautilus, GTK and the boot splash alone |
 | `--shell-only` | only the shell and Hyprland: `~/.config/quickshell`, `~/.config/hypr` (never its `custom/` folder), the shell's data, the wallpapers and the `impasto` command. The packages are the full list, and `--skip-packages` installs none. No `/`, no plugins, no extras, no other program's config, and the palette is written to none of the other programs until you choose some in Settings › Appearance. Remembered, so `update` and `sync` keep to it, and `./setup report` says what it left out |
 | `--full` | everything again, and forget `--shell-only` |
 | `--aur-helper yay\|paru` | which helper builds the AUR half — built from the AUR if you have neither |
@@ -207,23 +229,13 @@ Settings → Keys instead.
 | ⌨️ | Interactive shell | [zsh](https://www.zsh.org) · [oh-my-zsh](https://ohmyz.sh) |
 | ❯ | Prompt | [starship](https://starship.rs) |
 | 🎨 | Greeting | [fastfetch](https://github.com/fastfetch-cli/fastfetch) |
-| 📊 | System monitor | [btop](https://github.com/aristocratos/btop) |
 | 🎵 | Audio visualiser | [cava](https://github.com/karlstav/cava) |
-| 📁 | File manager | [yazi](https://yazi-rs.github.io) |
 | 🗂️ | File manager in a window | [Nautilus](https://apps.gnome.org/Nautilus/) |
-| ✏️ | Editor | [neovim](https://neovim.io) |
-| 📝 | Editor in a window | [VSCodium](https://vscodium.com) |
 | 🖼️ | Image viewer | [imv](https://sr.ht/~exec64/imv/) |
 | 🪄 | Annotator | [satty](https://github.com/gabm/Satty) |
-| 💬 | Chat | [Vesktop](https://github.com/Vencord/Vesktop) |
-| 🎧 | Player | [Spotify](https://www.spotify.com) · [spicetify](https://spicetify.app) |
-| 🌐 | Browser | [Zen](https://zen-browser.app) |
 | 🔆 | Monitor brightness | [ddcutil](https://www.ddcutil.com) |
-| 🖨️ | Printing | [CUPS](https://openprinting.github.io/cups/) · [Avahi](https://avahi.org) |
 | 🔑 | Login screen | [SDDM](https://github.com/sddm/sddm) |
 | 🎨 | Boot splash | [Plymouth](https://gitlab.freedesktop.org/plymouth/plymouth) |
-| 👤 | Face unlock | [howdy-next](https://codeberg.org/nathawat/howdy-next) |
-| 📷 | Camera effects | [MediaPipe](https://ai.google.dev/edge/mediapipe) · [v4l2loopback](https://github.com/umlaeute/v4l2loopback) |
 
 </details>
 

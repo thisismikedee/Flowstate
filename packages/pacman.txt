@@ -20,7 +20,7 @@ quickshell                   # the shell: the bar, the island, the lock, notific
 awww                         # the wallpaper
 imagemagick                  # the palette board
 python                       # every backend in scripts/
-git                          # setup's own clones, ./setup cursors, lazy.nvim
+git                          # setup's own clones, ./setup cursors
 grim                         # the capture's photograph, and the lock screen's
 dbus                         # dbus-monitor, which hears logind about to sleep
 wl-clipboard                 # copying, and the clipboard's history
@@ -33,10 +33,10 @@ playerctl                    # the play, pause, next and previous keys
 xdg-desktop-portal-hyprland  # screen sharing
 xdg-desktop-portal-gtk       # every Open dialog
 xdg-user-dirs                # the folders a capture lands in
-xdg-utils                    # xdg-open, which yazi hands the rest to
+xdg-utils                    # xdg-open, which opens files and links
 qt6ct                        # the platform theme env.lua names
-qt6-multimedia               # the camera panel's preview
-qt6-multimedia-ffmpeg        # its backend, which reads the virtual camera
+qt6-multimedia               # the appearance panel's video wallpaper preview
+qt6-multimedia-ffmpeg        # its backend
 papirus-icon-theme           # what the impasto icon theme inherits
 breeze-icons                 # the weather in full colour, when chosen
 inter-font                   # the shell's type, and the greeter's
@@ -89,30 +89,11 @@ songrec                      # the Song tile, naming what is playing
 
 # ── TERMINAL PROGRAMS ───────────────────────────────────────────────────────
 
-fzf                          # .zshrc reaches for it, and fzf-lua needs it
-zoxide                       # .zshrc reaches for it if it is there
-fnm                          # the same
 fastfetch                    # the greeting, on `fa`
-btop                         # themed by the palette push
-cava                         # the same, and the bar's visualiser
-yazi                         # the file manager in the terminal
-imv                          # what yazi and the photo widget hand a picture to
-mpv                          # what yazi hands a video or a song to
+cava                         # the bar's visualiser, themed by the palette push
+imv                          # what the photo widget and the launcher hand a picture to
 ffmpeg                       # an animated wallpaper's still, for its palette
-asciiquarium
 
-
-# ── EDITOR ──────────────────────────────────────────────────────────────────
-
-neovim
-tree-sitter-cli              # compiles the parsers · base-devel has the compiler
-ripgrep                      # the grep picker
-fd                           # the file picker
-lua-language-server          # each server starts only if its binary is there
-pyright                      # or basedpyright, from the AUR, which lsp.lua prefers
-ruff
-bash-language-server
-qt6-declarative              # qmlls6 · quickshell brings it anyway
 
 
 # ── FILE MANAGER ────────────────────────────────────────────────────────────
@@ -122,18 +103,6 @@ nautilus-python              # its right-click menu
 ffmpegthumbnailer            # a video's thumbnail
 gvfs                         # the trash, and mounting
 
-
-# ── PRINTING ────────────────────────────────────────────────────────────────
-
-cups                         # the print server every Print dialog asks · ./setup system
-cups-filters                 # turns what is printed into what a printer reads
-ghostscript                  # which those filters render a PDF with, and do not bring
-ipp-usb                      # a modern USB printer, without a driver
-avahi                        # finds the printers on the network
-nss-mdns                     # resolves their .local names
-gutenprint                   # drivers for older printers, the ones that need one
-system-config-printer        # adds a printer, in a window
-cups-pk-helper               # lets that window do it without root
 
 
 # ── QT ──────────────────────────────────────────────────────────────────────
@@ -163,14 +132,6 @@ plymouth                     # the boot splash · ./setup splash
 accountsservice              # the account's full name, which both screens show
 
 
-# ── FACE UNLOCK ─────────────────────────────────────────────────────────────
-
-v4l-utils                    # v4l2-ctl, which ./setup face and Settings find the infrared camera with
-
-
-# ── VIRTUAL MACHINES ────────────────────────────────────────────────────────
-
-qemu-desktop                 # the qemu quickemu runs · quickemu is from the AUR
 
 
 # ── DEVELOPMENT ─────────────────────────────────────────────────────────────

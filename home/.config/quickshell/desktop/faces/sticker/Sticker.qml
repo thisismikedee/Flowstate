@@ -30,7 +30,6 @@ Item {
         weather: weatherFace,
         github: githubFace,
         markets: marketsFace,
-        screentime: screenTimeFace,
         battery: batteryFace,
         stats: statsFace,
         claude: claudeFace,
@@ -45,7 +44,6 @@ Item {
         network: networkFace,
         bluetooth: bluetoothFace,
         pet: creatureFace,
-        games: gamesFace,
         photo: photoFace
     })
 
@@ -58,7 +56,6 @@ Item {
     Component { id: weatherFace;    WeatherFace    { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: githubFace;     GithubFace     { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: marketsFace;    MarketsFace    { family: root.family; ink: root.ink; seed: root.seed } }
-    Component { id: screenTimeFace; ScreenTimeFace { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: batteryFace;    BatteryFace    { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: statsFace;      StatsFace      { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: claudeFace;     ClaudeFace     { family: root.family; ink: root.ink; seed: root.seed } }
@@ -73,6 +70,5 @@ Item {
     Component { id: networkFace;    NetworkFace    { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: bluetoothFace;  BluetoothFace  { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: creatureFace;   CreatureFace   { family: root.family; ink: root.ink; seed: root.seed } }
-    Component { id: gamesFace;      GamesFace      { family: root.family; ink: root.ink; seed: root.seed } }
     Component { id: photoFace;      PhotoFace      { family: root.family; ink: root.ink; seed: root.seed; row: root.row } }
 }

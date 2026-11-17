@@ -152,8 +152,7 @@ Item {
                 }
 
                 Text {
-                    text: LockService.faceReady ? Tr.t("Face unlock or password")
-                                                : Tr.t("Enter your password")
+                    text: Tr.t("Enter your password")
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontSizeRegular
                     color: Theme.textMuted
