@@ -734,7 +734,7 @@ Singleton {
         // after every reload; `animations.lua` deliberately has no preset.
         property string animationPreset: "macos"
 
-        property string fontFamily: "Inter, Cantarell, SF Pro Text, sans-serif"
+        property string fontFamily: "SF Compact, Inter, Cantarell, SF Pro Text, sans-serif"
         property string fontMono: "JetBrainsMono Nerd Font Mono, monospace"
 
         property int notificationTimeout: 5000
