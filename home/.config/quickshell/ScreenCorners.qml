@@ -12,7 +12,6 @@ import Quickshell
 import Quickshell.Wayland
 
 import "./theme"
-import "./services"
 import "./components"
 
 // Four small surfaces rather than one over the whole screen, so the rest of
@@ -25,10 +24,9 @@ Scope {
     // Whether this screen's bar is the live one.
     required property bool live
 
-    // The bezel's band is the top of the frame: its own ends fill the top
-    // corners, and the curve is under them. Only while that band is there.
-    readonly property bool topCovered: SettingsService.barStyle === "bezel"
-        && !SettingsService.barHidden && (root.live || SettingsService.barEverywhere)
+    // The top corners are never covered: the island alone never reaches
+    // them, and there is no bezel band any more.
+    readonly property bool topCovered: false
 
     Variants {
         model: [

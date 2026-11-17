@@ -402,29 +402,24 @@ Singleton {
         root.applyShadow()
     }
 
-    // ── THE BAR'S AND THE DOCK'S GROUNDS ────────────────────────────────────
+    // ── THE BAR'S GROUND ────────────────────────────────────────────────────
     //
     // A blur behind the bar's layer while its ground lets the screen through
     // (`Theme.islandGround`), and none while it is solid, where it would only
-    // reach the shadow round the island. The dock's the same, and also under
-    // a classic capsule below full opacity. Named, so a push replaces the
+    // reach the shadow round the island. Named, so a push replaces the
     // last. The alpha floor sits under the thinnest ground and over the empty
     // surface; the shadow's densest band, just outside a shape, is blurred
     // with it, as the edge of a pane blurs what is under it.
     function applyGround(): void {
         root.groundSetter.command = ["hyprctl", "eval",
             `hl.layer_rule({ name = "impasto-bar-blur", match = { namespace = "^(impasto-bar)$" }, blur = true, ignore_alpha = 0.12, enabled = ${
-                Theme.solid || SettingsService.gameMode ? "false" : "true"} }) `
-            + `hl.layer_rule({ name = "impasto-dock-blur", match = { namespace = "^(impasto-dock)$" }, blur = true, ignore_alpha = 0.12, enabled = ${
-                root.dockSeeThrough && !SettingsService.gameMode ? "true" : "false"} })`]
+                Theme.solid || SettingsService.gameMode ? "false" : "true"} })`]
         root.groundSetter.running = true
     }
 
     readonly property Process groundSetter: Process {}
 
     readonly property bool solidGround: Theme.solid
-    readonly property bool dockSeeThrough: Theme.dockGlass || SettingsService.dockOpacity < 100
 
     onSolidGroundChanged: root.applyGround()
-    onDockSeeThroughChanged: root.applyGround()
 }

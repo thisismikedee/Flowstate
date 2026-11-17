@@ -193,9 +193,8 @@ Singleton {
         { id: "bezel",   label: "Bezel",      note: "A band across the whole top edge, with the island dropping out of its middle." }
     ]
 
-    // The island is cut into the top edge: chosen, or the bezel, which is
-    // always cut in.
-    readonly property bool notched: config.islandAttached || config.barStyle === "bezel"
+    // The island is cut into the top edge, when it is attached.
+    readonly property bool notched: config.islandAttached
 
     // Used while `barLeft`/`barRight` are null. `workspaces` is the strip,
     // `tray` the applications' icons and `split` starts a new capsule; none is

@@ -45,11 +45,10 @@ Item {
     // One row per page. `keywords` are extra search terms beyond the label.
     readonly property var sections: [
         { id: "bar", category: "shell", icon: "󰧨", label: Tr.t("Bar"),
-          blurb: Tr.t("How the top bar is drawn, what it carries and its workspaces."),
+          blurb: Tr.t("How the top bar is drawn and its workspaces."),
           tabs: [{ id: "style", label: Tr.t("Style") },
-                 { id: "layout", label: Tr.t("Layout") },
                  { id: "workspaces", label: Tr.t("Workspaces") }],
-          keywords: "bar style grouped spread one capsule bezel frame rounded corners screen sides capsules wallpaper every screen monitors height margin scale ground glass classic liquid shadow layout left right split drag catalogue chip icon ring figure hover shape modules media claude battery timer volume brightness network wifi speed download upload traffic bluetooth weather stats cpu updates pet capture record screenshot buttons workspaces strip dots bars rings numbers roman kanji greek apps icons shown available shared per screen",
+          keywords: "bar style rounded corners screen every screen monitors height margin scale ground glass classic liquid shadow chip icon ring figure hover shape workspaces dots bars rings numbers apps icons shown available shared per screen",
           page: barPage },
 
         { id: "island", category: "shell", icon: "󰌢", label: Tr.t("Island"),
@@ -72,12 +71,6 @@ Item {
                  { id: "clipboard", label: Tr.t("Clipboard") }],
           keywords: "launcher search apps results fallback fallbacks web address url browser terminal command calculate run window timer note task board prefix sigil order recent frequency clipboard history copy paste images wipe lock",
           page: launcherPage },
-
-        { id: "dock", category: "shell", icon: "󱂩", label: Tr.t("Dock"),
-          blurb: Tr.t("The dock and the applications kept on it."),
-          tabs: [],
-          keywords: "dock apps applications launcher pinned kept favourite favorite running edge bottom left right align icon size magnify ground glass classic liquid background opacity shadow autohide taskbar menu windows close every screen monitors",
-          page: dockPage },
 
         { id: "widgets", category: "shell", icon: "󰕮", label: Tr.t("Desktop"),
           blurb: Tr.t("What sits on the wallpaper, under the windows."),
@@ -157,14 +150,12 @@ Item {
     readonly property string guideRoot: "https://andreumassanet.github.io/impasto-docs/"
     readonly property var guides: ({
         "bar": "shell/bar/",
-        "bar/layout": "shell/bar/#arranging",
         "bar/workspaces": "shell/bar/#size-and-workspaces",
         "island": "shell/island/#settings",
         "island/notifications": "shell/island/#notifications",
         "widgets": "shell/desktop/#arranging",
         "modules": "shell/desktop/",
         "controls": "shell/control-centre/#arranging",
-        "dock": "shell/dock/#settings",
         "launcher": "shell/launcher/#settings",
         "launcher/sigils": "shell/launcher/#modes",
         "launcher/clipboard": "shell/launcher/#the-clipboard",
@@ -590,7 +581,6 @@ Item {
             root.panelRequested("controls")
             root.closed()
         } } }
-    Component { id: dockPage;       DockSection {} }
     Component { id: launcherPage;   LauncherSection {} }
     Component { id: appearancePage; AppearanceSection {
         onPanelRequested: name => root.panelRequested(name) } }

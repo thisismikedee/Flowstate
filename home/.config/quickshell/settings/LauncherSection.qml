@@ -199,6 +199,19 @@ SettingsSection {
         }
     }
 
+    // ── FAVOURITES ──────────────────────────────────────────────────────────
+    //
+    // The applications kept at the front of the launcher's list. Their order
+    // is the order they are listed in.
+    SettingGroup {
+        visible: root.tab === "results"
+        title: Tr.t("Favourites")
+        note: Tr.t("These stay at the front of the launcher's list, in this order, until something else is used more.")
+        hint: Tr.t("Add an application to keep it at the front, or remove one to let use decide its place.")
+
+        KeptApplications {}
+    }
+
     // ── SIGILS ──────────────────────────────────────────────────────────────
     //
     // Each sigil is edited in place, at the end of its mode's row.

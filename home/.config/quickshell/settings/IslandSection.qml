@@ -46,8 +46,6 @@ SettingsSection {
 
             SettingTiles {
                 label: Tr.t("Position")
-                locked: SettingsService.barStyle === "bezel"
-                reason: Tr.t("The bezel is always cut into the top edge")
                 reading: SettingsService.notched
                     ? Tr.t("Cut into the top edge")
                     : Tr.t("Floating below the top edge")
@@ -60,7 +58,6 @@ SettingsSection {
                     BarPreview {
                         anchors.centerIn: parent
                         attached: false
-                        barStyle: SettingsService.barStyle
                     }
                 }
 
@@ -72,7 +69,6 @@ SettingsSection {
                     BarPreview {
                         anchors.centerIn: parent
                         attached: true
-                        barStyle: SettingsService.barStyle
                     }
                 }
             }

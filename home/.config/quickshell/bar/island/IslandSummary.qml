@@ -16,6 +16,7 @@ import Quickshell.Widgets
 import "../../theme"
 import "../../services"
 import "../../components"
+import "../modules"
 
 // The glance is always one face: a square at the near end, what it is beside
 // it with its controls, and the time large at the far end with the day and
@@ -104,13 +105,53 @@ Item {
         return ""
     }
 
+    // ── STATUS ──────────────────────────────────────────────────────────────
+
+    // The pieces that used to flank the island, in one row at the top: the
+    // bell, the link, Bluetooth, the volume and the battery, each drawn as
+    // on the bar (`ChipFace`) and opening its detail on a click, as a bar
+    // chip did. Only the ones this machine has (`ModuleService.glanceStatus`).
+    Row {
+        x: root.margin + 4
+        y: (ModuleService.glanceStatusHeight - Theme.capsuleHeight) / 2
+        height: Theme.capsuleHeight
+        spacing: 22
+
+        Repeater {
+            model: ModuleService.glanceStatus
+
+            Item {
+                id: statusChip
+
+                required property string modelData
+
+                width: chipFace.implicitWidth
+                height: Theme.capsuleHeight
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.press(statusChip.modelData)
+                }
+
+                ChipFace {
+                    id: chipFace
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    moduleId: statusChip.modelData
+                    reveal: 1
+                }
+            }
+        }
+    }
+
     // ── FACE ────────────────────────────────────────────────────────────────
 
     Item {
         id: slot
 
         x: root.margin
-        y: root.margin
+        y: root.margin + ModuleService.glanceStatusHeight
         width: root.square
         height: root.square
         visible: root.face !== "clock"
@@ -403,7 +444,7 @@ Item {
     // and a reading. A chip does what that thing's mark does at rest.
     Row {
         x: root.margin + 4
-        y: ModuleService.glanceFaceHeight - root.margin + 14
+        y: ModuleService.glanceStatusHeight + ModuleService.glanceFaceHeight - root.margin + 14
         height: 24
         spacing: 22
 

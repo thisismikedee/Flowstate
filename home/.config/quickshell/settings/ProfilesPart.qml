@@ -37,26 +37,10 @@ Item {
     property string renaming: ""
     property string confirming: ""
 
-    readonly property var barPhrases: ({
-        grouped: Tr.t("Grouped bar"),
-        spread: Tr.t("Spread bar"),
-        island: Tr.t("One island"),
-        bezel: Tr.t("Bezel")
-    })
-
-    readonly property var dockPhrases: ({
-        bottom: Tr.t("dock at the bottom"),
-        left: Tr.t("dock on the left"),
-        right: Tr.t("dock on the right")
-    })
-
-    // "Grouped bar · dock at the bottom · 3 widgets", plus the palette's name
-    // when it is fixed rather than adaptive.
+    // "The island · 3 widgets", plus the palette's name when it is fixed
+    // rather than adaptive.
     function summary(values: var, palette: string): string {
-        const parts = [root.barPhrases[values.barStyle] ?? root.barPhrases.grouped]
-        parts.push(values.dockEnabled
-            ? (root.dockPhrases[values.dockEdge] ?? root.dockPhrases.bottom)
-            : Tr.t("no dock"))
+        const parts = [Tr.t("The island")]
         const widgets = (values.desktopWidgets ?? []).filter(row => !row.edge).length
         parts.push(widgets === 0 ? Tr.t("nothing on the desk")
             : `${widgets} ${Tr.t(widgets === 1 ? "widget" : "widgets")}`)

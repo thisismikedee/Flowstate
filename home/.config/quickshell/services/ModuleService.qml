@@ -434,9 +434,10 @@ Singleton {
     // is wider, for a line of lyrics beside the time; the rest leave their
     // reading 170 px, which a weather line or a machine's state needs.
     // Nothing running and no weather is five days beside the time, 420.
-    readonly property int summaryWidth: (root.glanceFace === "media" ? 620
+    readonly property int summaryWidth: Math.max(640,
+        (root.glanceFace === "media" ? 620
             : root.glanceFace === "clock" ? 420 : 560)
-        + root.glanceTime - root.glanceTimeBase
+        + root.glanceTime - root.glanceTimeBase)
     // Measured again when the type changes: a call is not a dependency.
     readonly property int glanceTimeBase: root.timeMetrics.font.family !== ""
         ? Math.ceil(root.timeMetrics.advanceWidth("20:48")) : 0
@@ -449,7 +450,16 @@ Singleton {
         font.pixelSize: 62
         font.weight: Font.Black
     }
-    readonly property int summaryHeight: root.glanceFaceHeight
+    // The status row at the top of the glance, in the order it is read:
+    // notifications, the link, Bluetooth, the volume and the battery — the
+    // pieces that used to flank the island. Only the ones this machine has.
+    // The glance is at least 640 wide so the five chips and their figures
+    // fit; the row is a chip tall with room under it before the face.
+    readonly property var glanceStatus: ["notifications", "network", "bluetooth", "volume", "battery"]
+        .filter(id => root.shows(id, ""))
+    readonly property int glanceStatusHeight: Theme.capsuleHeight + 16
+
+    readonly property int summaryHeight: root.glanceStatusHeight + root.glanceFaceHeight
         + (root.glanceStrip.length > 0 ? root.glanceStripHeight : 0)
 
     // Everything running, in the island's order. Its own count, not the
@@ -615,7 +625,7 @@ Singleton {
         case "bluetooth":
             return BluetoothService.available
         case "devices":
-            // The pieces are drawn one per device (`BarZone`); with none
+            // The pieces are drawn one per device; with none
             // connected there is nothing to show or open.
             return DeviceService.devices.length > 0
         case "weather":

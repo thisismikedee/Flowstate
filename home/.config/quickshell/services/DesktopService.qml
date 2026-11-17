@@ -205,18 +205,14 @@ Singleton {
     // ── BOARD ───────────────────────────────────────────────────────────────
     //
     // The desktop surface covers the whole screen and ignores exclusive zones
-    // so drags can cross the bar. The board is the surface minus the bar and
-    // dock reservations; the decks share these insets, and the grid is laid
-    // out as if there were no dock (`wholeGrid`).
-    // One answer for every board: the dock's band is kept clear wherever the
-    // dock could be, not where it happens to be painting (`DockService.zone`),
-    // so nothing on a grid moves because a window went fullscreen or a hand
-    // crossed a screen.
+    // so drags can cross the bar. The board is the surface minus the bar's
+    // reservation; the decks share these insets. The dock is gone, so no
+    // band is kept clear at any edge.
     readonly property var insets: ({
         top: Theme.barReserve,
-        left: DockService.edge === "left" ? DockService.zone : 0,
-        right: DockService.edge === "right" ? DockService.zone : 0,
-        bottom: DockService.edge === "bottom" ? DockService.zone : 0
+        left: 0,
+        right: 0,
+        bottom: 0
     })
 
     // ── SCREENS ─────────────────────────────────────────────────────────────

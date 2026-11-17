@@ -22,7 +22,6 @@ import Quickshell.Io
 import "./bar"
 import "./capture"
 import "./desktop"
-import "./dock"
 import "./lock"
 import "./osk"
 import "./services"
@@ -180,22 +179,6 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-        }
-    }
-
-    // A dock on every screen, each drawn or not by `dockEverywhere` and
-    // which screen is live.
-    Variants {
-        model: Quickshell.screens
-
-        Dock {
-            required property var modelData
-
-            screen: modelData
-            live: modelData.name === root.liveScreenName
-
-            // The dock cannot see the island, so it asks.
-            onLauncherRequested: root.island?.toggle("launcher")
         }
     }
 

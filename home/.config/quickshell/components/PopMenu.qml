@@ -13,10 +13,10 @@ import Quickshell
 
 import "../theme"
 
-// A small context menu with the dock menu's look (plate, row height, fixed
-// width), so right-click menus on the wallpaper, widgets and dock match.
+// A small context menu (plate, row height, fixed width), so right-click
+// menus on the wallpaper and widgets match.
 //
-// Drawn inside the owning surface, not as a popup (see `DockMenu`). It never
+// Drawn inside the owning surface, not as a popup. It never
 // takes the keyboard: it closes on a click outside, a right click, or a
 // choice.
 //

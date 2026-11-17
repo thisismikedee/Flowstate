@@ -1,7 +1,7 @@
 // ╭──────────────────────────────────────────────────────────────────────────╮
 // │                                                                          │
 // │   B A R                                                                  │
-// │   the bar · the island and its two sides, in three styles                │
+// │   the bar · the island alone, centred at the top                         │
 // │                                                                          │
 // │   github.com/andreumassanet/impasto                                      │
 // │                                                                          │
@@ -16,22 +16,15 @@ import Quickshell.Wayland
 import "../theme"
 import "../services"
 import "./widgets"
-import "./modules"
 import "./island"
 import "./island/controls"
 import "../components"
 
-// The island in the middle and the two sides (`SettingsService.barZone`), in
-// one of three styles:
-//
-//   grouped   the sides sit against the island and move aside as it grows
-//   spread    the sides sit at the screen edges and hold still
-//   island    everything in one capsule; the band morphs into whatever the
-//             island opens
-//
-// Every detail opens in the island. The window is full-screen and never
-// resizes; the input mask covers the bar and the island, and a focus grab
-// closes the island on any click outside it.
+// The island, centred at the top and nothing beside it: no sides flanking
+// it, no band joining them, no bezel across the edge. Every detail opens in
+// the island. The window is full-screen and never resizes; the input mask
+// covers the bar and the island, and a focus grab closes the island on any
+// click outside it.
 //
 // ── ONE PER SCREEN, ONE LIVE ────────────────────────────────────────────────
 //
@@ -94,51 +87,37 @@ PanelWindow {
     // outer gap so the bar lines up with tiled windows.
     readonly property int edgeMargin: SettingsService.barSideMargin
 
-    readonly property string style: SettingsService.barStyle
-    readonly property bool spread: root.style === "spread"
-    // The bezel is one capsule too, spanning the top edge.
-    readonly property bool unified: root.style === "island" || root.style === "bezel"
-    // The sides on the wallpaper, without capsules; not in one capsule, whose
-    // band is the sides' ground.
-    readonly property bool bare: !root.unified && SettingsService.barSides === "bare"
-    readonly property bool grouped: !root.spread && !root.unified
-
-    // The bezel: the band is the top of the screen's frame, out to both
-    // edges, with the screen's corners curving under its ends. It never
-    // moves: what the island shows drops out of its middle.
-    readonly property bool edgeToEdge: root.style === "bezel"
+    // ── ONE SHAPE ───────────────────────────────────────────────────────────
+    //
+    // The bar is the island alone, so the three styles are gone and these
+    // are constants rather than readings of `barStyle`. The band, the bezel
+    // and the notch fillets below are drawn only while one of them is true,
+    // so they stay inert. The island itself still floats or attaches
+    // (`SettingsService.notched`).
+    readonly property bool spread: false
+    readonly property bool unified: false
+    readonly property bool bare: false
+    readonly property bool grouped: true
+    readonly property bool edgeToEdge: false
 
     readonly property bool holding: island.expanded
 
-    // Maximum panel width. Spread, the sides stay put, so a panel gets the room
-    // between them, unless it is wider than that: then they hide as grouped
-    // sides do and it gets the whole bar, like everywhere else. A narrow
-    // screen with a full bar would otherwise cut a panel's columns off.
-    readonly property int roomBetween: root.width - 2 * (root.edgeMargin
-        + Math.max(leftZone.width, rightZone.width) + Theme.capsuleSpacing)
-    readonly property bool crowded: root.spread && island.expanded
-        && island.panelSize.width > root.roomBetween
-    readonly property int panelRoom: root.spread && !root.crowded
-        ? root.roomBetween : root.width - 2 * root.edgeMargin
+    // Maximum panel width: the whole bar between its margins. Nothing
+    // flanks the island any more, so a panel is never crowded out.
+    readonly property int panelRoom: root.width - 2 * root.edgeMargin
 
     // Computed rather than read from `island.x`, which comes from an anchor
     // resolved during layout and would lag a frame behind the width.
     readonly property real islandLeft: (root.width - island.width) / 2
     readonly property real islandRight: root.islandLeft + island.width
 
-    // ── ONE CAPSULE ─────────────────────────────────────────────────────────
+    // ── THE BAND ────────────────────────────────────────────────────────────
     //
-    // A band a capsule tall, with the sides at its ends and the island in the
-    // middle. When the island shows anything beyond the clock, the band morphs
-    // into it and the sides are clipped by its closing ends.
-
-    // Inset of each side from the band's edge, clear of the curve.
-    readonly property int hostedInset: 12
-
-    // The same at both ends, so the clock stays centred on the screen.
-    readonly property real hostedSlot: root.unified
-        ? root.hostedInset + Math.max(leftZone.width, rightZone.width) + Theme.capsuleSpacing * 2
-        : 0
+    // The band the sides used to sit on is inert now (`unified` is false):
+    // it never draws, and the island is the only shape. Its width is kept
+    // for the shadow and the notch fillets, which read the island's shape
+    // through it.
+    readonly property real bodyWidth: island.width
 
     // The island's width inside the band, animated on the island's clock so
     // the band widens with it. An OSD is wider than the clock and pushes the
@@ -151,26 +130,15 @@ PanelWindow {
         NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
     }
 
-    // The band at rest: the island's rest width plus a slot for each side.
-    readonly property real bodyWidth: {
-        if (!root.unified)
-            return island.width
-        if (root.edgeToEdge)
-            return root.width - 2 * root.edgeMargin
-        return root.restWidth + 2 * root.hostedSlot
-    }
-
     readonly property real bandRow: Theme.capsuleHeight + island.notchPad
 
     // The island is showing more than the clock: a panel, a detail, the
     // glance or a notification. An OSD fits in the band and does not count.
-    // In zen too, where the sides are away and the band is only the island.
+    // In zen too, where the band is only the island.
     readonly property bool islandTaken: island.expanded
         || island.state.layer === island.state.layerSummary
         || island.state.layer === island.state.layerNotification
         || root.zen
-    readonly property real bodyX: root.edgeToEdge
-        ? root.edgeMargin : (root.width - root.bodyWidth) / 2
 
     // 0 at rest, 1 once the island has taken over the band. Animated on the
     // island's clock and curve so the two land together.
@@ -192,31 +160,14 @@ PanelWindow {
             : island.width + (root.bodyWidth - root.restWidth) * Math.max(0, 1 - root.bandInto)
     readonly property real bandX: (root.width - root.bandWidth) / 2
 
-    // Attached (notch mode), only the island reaches the screen edge; the
-    // sides stay capsules, centred on `laneY`.
+    // Attached (notch mode), only the island reaches the screen edge.
     readonly property int islandTopMargin: SettingsService.notched ? 0 : Theme.barTopMargin
 
     // How far the glass's light from the top reaches down the notch
     // (`GlassSheen`), for the fillets that carry it on.
     readonly property real notchSheen: Theme.glass && !island.paper ? Theme.glassSheenDepth : 0
 
-    // The line everything on the bar is centred on. Attached, the island
-    // reaches the screen edge, so its centre is half a margin higher and the
-    // sides move up to match.
-    readonly property real laneY: SettingsService.notched
-        ? Theme.barTopMargin / 2 : Theme.barTopMargin
-
     readonly property int collapsedHeight: Theme.barBand
-
-    // Grouped, the sides make room for a module detail but hide for a panel.
-    // In one capsule they hide whenever the island takes the band, and spread
-    // only for a panel too wide to fit between them.
-    readonly property bool sidesAway: root.edgeToEdge
-        ? root.islandTaken && island.width / 2 > root.width / 2 - root.bodyX - root.hostedSlot
-        : root.unified
-        ? root.islandTaken
-        : root.crowded
-            || island.expanded && root.grouped && island.state.openPanel !== "module"
 
     anchors {
         top: true
@@ -232,11 +183,11 @@ PanelWindow {
     // the mask, which is cheap to change per frame.
     implicitHeight: root.screen.height
 
-    // Input region: the bar's band, plus the island's shape (the band's, in
-    // one capsule) with 12 px below it so the bottom edge still counts. The
-    // whole screen only while the control centre is being arranged, since
-    // blocks are dragged out of the tray card, which moves. Outside clicks are
-    // left to the focus grab, so windows under an open panel stay usable.
+    // Input region: the island's shape, with 12 px below it so the bottom
+    // edge still counts. The whole screen only while the control centre is
+    // being arranged, since blocks are dragged out of the tray card, which
+    // moves. Outside clicks are left to the focus grab, so windows under an
+    // open panel stay usable.
     readonly property real shapeLeft: root.unified && !root.edgeToEdge
         ? Math.min(root.bandX, root.islandLeft) : root.islandLeft
     readonly property real shapeRight: root.unified && !root.edgeToEdge
@@ -250,7 +201,7 @@ PanelWindow {
 
     // Zen (`barHidden`): the bar waits above the screen and the island comes
     // down only for what it has to show — a panel, a notification, a
-    // transient — with the sides left up there. A screen under a full-screen
+    // transient. A screen under a full-screen
     // window is zen on its own, and only the readout rises over the window.
     readonly property bool covered: !!root.screen
         && DockService.coveredScreens.includes(` ${root.screen.name} `)
@@ -268,21 +219,6 @@ PanelWindow {
     // A panel the person opened brings the whole bar down; a notification or
     // an OSD brings only the island, as in zen.
     readonly property bool panelOpen: island.state.layer === island.state.layerPanel
-
-    // The input follows each side's own extent rather than the whole band, so
-    // the gaps between the capsules stay usable. A bezel is the band, and is
-    // kept whole.
-    readonly property bool narrowBand: root.autohide && !SettingsService.barHidden
-        && !root.edgeToEdge
-    readonly property bool sidesLive: root.narrowBand && !root.inert && !root.sidesAway
-    readonly property point leftAt: {
-        void face.y; void sides.x; void leftZone.x; void leftZone.y
-        return leftZone.mapToItem(null, 0, 0)
-    }
-    readonly property point rightAt: {
-        void face.y; void sides.x; void rightZone.x; void rightZone.y
-        return rightZone.mapToItem(null, 0, 0)
-    }
 
     // The strip along the top edge keeps taking input while the bar is down,
     // so a pointer resting on the edge between two capsules does not make the
@@ -309,30 +245,15 @@ PanelWindow {
 
     mask: Region {
         width: root.inert ? 0 : root.width
-        // In zen the band is empty, and only the island's shape takes input.
+        // In zen the bar is empty, and only the island's shape takes input.
         height: root.inert ? 0
             : root.wholeScreen ? root.height
-            : (root.zen || root.narrowBand) ? 0 : root.collapsedHeight
+            : root.zen ? 0 : root.collapsedHeight
 
         Region {
             x: root.shapeLeft
             width: root.inert ? 0 : root.shapeRight - root.shapeLeft
             height: root.islandTopMargin + island.height + 12
-        }
-
-        // Autohide: each side takes input over its own extent only.
-        Region {
-            x: root.leftAt.x
-            y: root.leftAt.y
-            width: root.sidesLive ? leftZone.width : 0
-            height: root.sidesLive ? leftZone.height : 0
-        }
-
-        Region {
-            x: root.rightAt.x
-            y: root.rightAt.y
-            width: root.sidesLive ? rightZone.width : 0
-            height: root.sidesLive ? rightZone.height : 0
         }
 
         // Autohide: a thin strip along the top edge.
@@ -491,7 +412,7 @@ PanelWindow {
         // The window shadow's numbers, on its own setting (`barShadow`). The
         // band, the island and the notch fillets touch, so they share one
         // flattened layer; separate shadows would draw a seam where they
-        // overlap. The side capsules cast their own (`BarZone`).
+        // overlap.
         //
         // Cast from a copy of the shapes: layering the real bar would re-blur the
         // full-screen surface every time the clock or the spectrum repaints.
@@ -1056,103 +977,13 @@ PanelWindow {
             }
         }
 
-        component BareShadow: MultiEffect {
-            shadowEnabled: true
-            blurMax: Theme.barShadowReach
-            shadowBlur: 1
-            shadowVerticalOffset: 1
-            shadowColor: Theme.barShadow
-        }
-
-        // ── SIDES ───────────────────────────────────────────────────────────────
-        //
-        // Grouped, the sides are anchored to the island's animated edges, so they
-        // move aside on its clock with nothing else to animate. Spread, they stay
-        // in the corners. In one capsule they are the band's ends; while it morphs
-        // they are clipped by it and fade out faster than it closes.
-        Item {
-            id: sides
-
-            readonly property bool cropped: root.unified && root.bandInto > 0
-
-            x: sides.cropped ? band.x : 0
-            y: 0
-            width: sides.cropped ? band.width : root.width
-            height: root.height
-            clip: sides.cropped
-            opacity: root.zen ? 0 : 1
-            visible: opacity > 0
-
-            Behavior on opacity {
-                NumberAnimation { duration: Theme.durationFast; easing.type: Theme.easing }
-            }
-
-            // On the wallpaper, the sides are cast twice: the shadow's own
-            // shadow is what makes a thin dark edge dense enough to hold white
-            // off a light picture, which one blurred copy of a small glyph is
-            // not.
-            layer.enabled: root.bare
-            layer.effect: BareShadow {}
-
-            BarZone {
-                id: leftZone
-
-                entries: SettingsService.barItems("left")
-                chromeless: root.unified || root.bare
-                overWallpaper: root.bare
-
-                layer.enabled: root.bare
-                layer.effect: BareShadow {}
-                x: (root.unified ? root.bodyX + root.hostedInset
-                    : root.spread ? root.edgeMargin
-                    : root.islandLeft - Theme.capsuleSpacing - leftZone.width) - sides.x
-                y: root.laneY
-                opacity: root.sidesAway ? 0 : 1
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: root.unified && root.sidesAway ? Theme.durationFast : Theme.durationMedium
-                        easing.type: Theme.easing
-                    }
-                }
-            }
-
-            BarZone {
-                id: rightZone
-
-                entries: SettingsService.barItems("right")
-                chromeless: root.unified || root.bare
-                overWallpaper: root.bare
-
-                layer.enabled: root.bare
-                layer.effect: BareShadow {}
-                x: (root.unified ? root.bodyX + root.bodyWidth - root.hostedInset - rightZone.width
-                    : root.spread ? root.width - root.edgeMargin - rightZone.width
-                    : root.islandRight + Theme.capsuleSpacing) - sides.x
-                y: root.laneY
-                opacity: root.sidesAway ? 0 : 1
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: root.unified && root.sidesAway ? Theme.durationFast : Theme.durationMedium
-                        easing.type: Theme.easing
-                    }
-                }
-            }
-        }
     }
 
     // ── HOVER CARD ──────────────────────────────────────────────────────────
     //
     // A piece's name and value in a card under it (`ModuleService.peek…`,
-    // `SettingsService.chipHover`). In the island and bezel styles the bar is
-    // one band, so the card is a tab that grows down out of the band's lower
-    // edge, in the band's colour and joined to it by two fillets. In the
-    // grouped and spread styles, with their capsules or without, a piece has
-    // no wide edge to join, so the card hangs free a little below it, as a
-    // pill in the capsules' ground and rim. Either way it stays inside the
+    // `SettingsService.chipHover`). The card hangs free a little below the
+    // piece, as a pill in the island's ground and rim. It stays inside the
     // bar's width. On this screen's bar only, and not while the island is
     // open; no input of its own.
     Item {

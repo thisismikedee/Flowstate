@@ -14,9 +14,10 @@ import Quickshell
 import "../theme"
 import "../services"
 import "../components"
+import "../bar/modules"
 
-// Three parts: how the bar is drawn, what it carries (`ModulesPart`), and the
-// workspaces its strip shows. What the island shows is `IslandSection`.
+// Two parts: how the bar is drawn, and the workspaces it numbers. What the
+// island shows is `IslandSection`.
 SettingsSection {
     id: root
 
@@ -33,33 +34,7 @@ SettingsSection {
         SettingGroup {
             title: Tr.t("Shape")
             note: Tr.t("How the bar is drawn round the island.")
-            hint: Tr.t("The style keeps what is on the bar and only changes how it is drawn: grouped round the island, spread to the two edges, all inside one capsule, or a bezel across the top edge. What each side carries is arranged in Layout. Rounded corners round every screen, and curve under the bezel's ends.")
-
-            SettingTiles {
-                label: Tr.t("Style")
-                reading: Tr.t((SettingsService.barStyles.find(
-                    entry => entry.id === SettingsService.barStyle) ?? { note: "" }).note)
-
-                Repeater {
-                    model: SettingsService.barStyles
-
-                    PreviewTile {
-                        id: styleTile
-
-                        required property var modelData
-
-                        caption: Tr.t(styleTile.modelData.label)
-                        selected: SettingsService.barStyle === styleTile.modelData.id
-                        onPicked: SettingsService.set("barStyle", styleTile.modelData.id)
-
-                        BarPreview {
-                            anchors.centerIn: parent
-                            attached: SettingsService.islandAttached
-                            barStyle: styleTile.modelData.id
-                        }
-                    }
-                }
-            }
+            hint: Tr.t("The bar is the island alone, centred at the top. Rounded corners round every screen.")
 
             SettingRow {
                 label: Tr.t("Rounded corners")
@@ -70,25 +45,6 @@ SettingsSection {
                 ToggleSwitch {
                     checked: SettingsService.screenCorners
                     onToggled: checked => SettingsService.set("screenCorners", checked)
-                }
-            }
-
-            // Locked in one capsule, where the sides sit on its band.
-            SettingRow {
-                label: Tr.t("Sides")
-                reading: SettingsService.barSides === "bare"
-                    ? Tr.t("The icons on the wallpaper")
-                    : Tr.t("Each group in a capsule")
-                locked: SettingsService.barStyle === "island" || SettingsService.barStyle === "bezel"
-                reason: Tr.t("In one island the sides sit on its band")
-
-                SegmentedControl {
-                    options: [
-                        { id: "capsule", label: Tr.t("In capsules") },
-                        { id: "bare", label: Tr.t("On the wallpaper") }
-                    ]
-                    current: SettingsService.barSides
-                    onSelected: id => SettingsService.set("barSides", id)
                 }
             }
 
@@ -169,44 +125,169 @@ SettingsSection {
                 }
             }
         }
-    }
 
-    // ── LAYOUT ──────────────────────────────────────────────────────────────
+        // ── CHIPS ───────────────────────────────────────────────────────────
+        //
+        // How the status chips in the island's glance read: one setting for
+        // them all.
+        SettingGroup {
+            title: Tr.t("Chips")
+            note: Tr.t("How the status chips in the island's glance read.")
+            hint: Tr.t("Icon shows the module's symbol; Ring draws the gauge of a module that measures something (charge, volume, a countdown) as a circle around it, and the rest keep their symbol. The figure is the value itself, and On hover shows it only while the pointer is over the chip.")
 
-    ModulesPart {
-        Layout.fillWidth: true
-        spacing: root.spacing
-        visible: root.tab === "layout"
-    }
+            SettingTiles {
+                label: Tr.t("Shape")
+                reading: Tr.t((SettingsService.chipShapes.find(
+                    entry => entry.id === SettingsService.chipShape) ?? { note: "" }).note)
 
-    // The tray items the applications have now, to leave out of the bar.
-    SettingGroup {
-        visible: root.tab === "layout" && TrayService.all.length > 0
-        title: Tr.t("Tray")
-        note: Tr.t("The applications that are showing a tray icon.")
+                Repeater {
+                    model: SettingsService.chipShapes
 
-        Repeater {
-            model: ScriptModel {
-                objectProp: "id"
-                values: TrayService.all
+                    PreviewTile {
+                        id: shapeTile
+
+                        required property var modelData
+
+                        caption: Tr.t(shapeTile.modelData.label)
+                        selected: SettingsService.chipShape === shapeTile.modelData.id
+                        onPicked: SettingsService.set("chipShape", shapeTile.modelData.id)
+
+                        Sample {
+                            anchors.centerIn: parent
+                            shape: shapeTile.modelData.id
+                            ids: ["volume", "battery", "claude"]
+                            reveal: SettingsService.chipFigure === "on"
+                                || (SettingsService.chipFigure === "hover" && shapeTile.hovered) ? 1 : 0
+                        }
+                    }
+                }
             }
 
-            SettingRow {
-                id: trayRow
+            // The hover tile opens when pointed at, demonstrating the setting.
+            SettingTiles {
+                label: Tr.t("Figure")
+                reading: Tr.t((SettingsService.chipFigures.find(
+                    entry => entry.id === SettingsService.chipFigure) ?? { note: "" }).note)
 
-                required property var modelData
-                readonly property bool shown: Array.from(SettingsService.trayHidden ?? [])
-                    .indexOf(trayRow.modelData.id) < 0
+                Repeater {
+                    model: SettingsService.chipFigures
 
-                label: trayRow.modelData.tooltipTitle || trayRow.modelData.title || trayRow.modelData.id
-                reading: trayRow.modelData.id
+                    PreviewTile {
+                        id: figureTile
 
-                ToggleSwitch {
-                    checked: trayRow.shown
-                    onToggled: checked => {
-                        const rest = Array.from(SettingsService.trayHidden ?? [])
-                            .filter(id => id !== trayRow.modelData.id)
-                        SettingsService.set("trayHidden", checked ? rest : rest.concat([trayRow.modelData.id]))
+                        required property var modelData
+
+                        caption: Tr.t(figureTile.modelData.label)
+                        selected: SettingsService.chipFigure === figureTile.modelData.id
+                        onPicked: SettingsService.set("chipFigure", figureTile.modelData.id)
+
+                        Sample {
+                            anchors.centerIn: parent
+                            shape: SettingsService.chipShape
+                            ids: ["volume", "battery"]
+                            reveal: figureTile.modelData.id === "on"
+                                || (figureTile.modelData.id === "hover" && figureTile.hovered) ? 1 : 0
+                        }
+                    }
+                }
+            }
+
+            // Only a figure that waits for the pointer has a hover to choose: the
+            // tiles stay in view, dimmed, so the choice can be found.
+            SettingTiles {
+                label: Tr.t("On hover")
+                reading: SettingsService.chipFigure !== "hover"
+                    ? Tr.t("Used when the figure is set to On hover")
+                    : Tr.t((SettingsService.chipHovers.find(
+                        entry => entry.id === SettingsService.chipHover) ?? { note: "" }).note)
+                enabled: SettingsService.chipFigure === "hover"
+                opacity: enabled ? 1 : 0.45
+
+                Repeater {
+                    model: SettingsService.chipHovers
+
+                    PreviewTile {
+                        id: hoverTile
+
+                        required property var modelData
+
+                        caption: Tr.t(hoverTile.modelData.label)
+                        selected: SettingsService.chipHover === hoverTile.modelData.id
+                        onPicked: SettingsService.set("chipHover", hoverTile.modelData.id)
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            Sample {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                shape: SettingsService.chipShape
+                                ids: ["volume"]
+                                // Inline: the figure opens beside the piece.
+                                reveal: hoverTile.modelData.id === "widen" ? 1 : 0
+                            }
+
+                            // Pill: the figure waits in a small pill under it.
+                            Rectangle {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                visible: hoverTile.modelData.id === "card"
+                                width: pillText.implicitWidth + 14
+                                height: pillText.implicitHeight + 6
+                                radius: height / 2
+                                color: Theme.islandSurfaceHover
+
+                                Text {
+                                    id: pillText
+
+                                    anchors.centerIn: parent
+                                    text: `${Tr.t("Volume")} · 40%`
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontSizeLabel
+                                    color: Theme.text
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // A capsule of real `ChipFace`s at a given shape and figure, so the
+        // preview always matches the glance.
+        component Sample: Rectangle {
+            id: sample
+
+            property string shape: "icon"
+            property var ids: []
+            property real reveal: 1
+
+            Behavior on reveal {
+                NumberAnimation { duration: Theme.durationFast; easing.type: Easing.OutCubic }
+            }
+
+            implicitWidth: row.implicitWidth + 8
+            implicitHeight: Theme.capsuleHeight
+            radius: height / 2
+            color: Theme.island
+            border.color: Theme.islandBorder
+            border.width: 1
+
+            Row {
+                id: row
+
+                x: 4
+                height: parent.height
+
+                Repeater {
+                    model: sample.ids
+
+                    ChipFace {
+                        required property string modelData
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        moduleId: modelData
+                        shape: sample.shape
+                        reveal: sample.reveal
                     }
                 }
             }
@@ -219,36 +300,6 @@ SettingsSection {
         visible: root.tab === "workspaces"
         title: Tr.t("Workspaces")
         note: Tr.t("The shown workspaces are always drawn; the rest, up to the available count, appear only while they have windows.")
-
-        SettingBlock {
-            WorkspaceStyles {
-                Layout.fillWidth: true
-            }
-        }
-
-        SettingRow {
-            label: Tr.t("Applications")
-            reading: SettingsService.workspaceApps
-                ? Tr.t("The focused workspace's icons after its mark")
-                : Tr.t("The marks alone")
-
-            ToggleSwitch {
-                checked: SettingsService.workspaceApps
-                onToggled: checked => SettingsService.set("workspaceApps", checked)
-            }
-        }
-
-        SettingRow {
-            label: Tr.t("Numbers while Super is held")
-            reading: SettingsService.workspaceNumbersOnSuper
-                ? Tr.t("Holding Super shows each workspace's number")
-                : Tr.t("The style stays as it is")
-
-            ToggleSwitch {
-                checked: SettingsService.workspaceNumbersOnSuper
-                onToggled: checked => SettingsService.set("workspaceNumbersOnSuper", checked)
-            }
-        }
 
         SettingSlider {
             label: Tr.t("Workspaces shown")

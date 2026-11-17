@@ -305,20 +305,14 @@ Singleton {
             action: () => AudioService.toggleMute()
         },
         Toggle {
-            key: "dock"; icon: "󱂠"; label: Tr.t("Dock")
-            detail: SettingsService.dockEnabled ? Tr.t("Shown") : Tr.t("Hidden")
-            active: SettingsService.dockEnabled
-            action: () => SettingsService.set("dockEnabled", !SettingsService.dockEnabled)
-        },
-        Toggle {
             key: "notch"; icon: "󰌢"; label: Tr.t("Notch")
             detail: SettingsService.islandAttached ? Tr.t("Attached") : Tr.t("Floating")
             active: SettingsService.islandAttached
             action: () => SettingsService.set("islandAttached", !SettingsService.islandAttached)
         },
         Toggle {
-            // All four at once; the settings set them one by one.
-            readonly property var shadows: ["windowShadow", "barShadow", "dockShadow", "widgetShadow"]
+            // All three at once; the settings set them one by one.
+            readonly property var shadows: ["windowShadow", "barShadow", "widgetShadow"]
             readonly property int count: shadows.filter(key => SettingsService[key]).length
 
             key: "shadow"; icon: "󰘷"; label: Tr.t("Shadows")
