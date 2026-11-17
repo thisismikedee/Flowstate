@@ -91,9 +91,6 @@ Singleton {
     readonly property alias launcherSearchUrl: config.launcherSearchUrl
     readonly property alias launcherFits: config.launcherFits
     readonly property alias emojiTone: config.emojiTone
-    readonly property alias cameraEnabled: config.cameraEnabled
-    readonly property alias cameraEffect: config.cameraEffect
-    readonly property alias cameraReactions: config.cameraReactions
     readonly property alias clipboardHistory: config.clipboardHistory
     readonly property alias clipboardKeep: config.clipboardKeep
     readonly property alias clipboardImages: config.clipboardImages
@@ -377,7 +374,7 @@ Singleton {
         "emojiTone",
         "doNotDisturb", "nightLight", "nightTemperature", "barHidden", "desktopHidden",
         "gameMode", "powerTileProfile", "brightnessBelowFloor", "themeTargets", "calendarLinks",
-        "cameraEnabled", "cameraEffect", "cameraReactions", "wallpaperFavourites",
+        "wallpaperFavourites",
         "recorderAudio", "captureShape", "captureKind"
     ]
 
