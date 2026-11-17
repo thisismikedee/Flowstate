@@ -362,10 +362,14 @@ Item {
     }
 
     // The same block, in the same place, in every face; beside the five days
-    // the time alone, since they say the date.
+    // the time alone, since they say the date. It is never drawn: the
+    // travelling time (`TimeTraveller`, owned by the island) is the time on
+    // screen, and this only holds the measure the face and the week anchor
+    // to, so they sit beside the time wherever it lands.
     Clock {
         id: time
 
+        visible: false
         dated: root.face !== "clock"
         x: root.width - width - root.margin - 4
         anchors.verticalCenter: slot.verticalCenter

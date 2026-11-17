@@ -472,6 +472,17 @@ Rectangle {
                     easing.type: Theme.easing
                 }
             }
+
+            // The island's one time. It lives here, above the layer, so it
+            // is never destroyed when the layer swaps: at rest the small
+            // time centred in the pill, in the glance the large time at the
+            // far end, gliding and growing between the two on the island's
+            // own morph. The layers below draw no time of their own.
+            TimeTraveller {
+                summary: islandState.layer === islandState.layerSummary
+                shown: islandState.layer === islandState.layerModules
+                    || islandState.layer === islandState.layerSummary
+            }
         }
     }
 

@@ -14,11 +14,11 @@ import Quickshell.Widgets
 import "../../theme"
 import "../../services"
 import "../../components"
-import "../modules"
 
-// The island at rest: the clock in the middle, with a recording, countdown or
-// track either side while one is running (one item split across both sides,
-// mark leading and figure trailing, or one item per side).
+// The island at rest: the travelling time in the middle (drawn by the
+// island itself, not here), with a recording, countdown or track either
+// side while one is running (one item split across both sides, mark leading
+// and figure trailing, or one item per side).
 //
 // A recording stops with one click here, since nothing else on screen can stop
 // it; the dot squares off under the pointer to show that. A countdown or a
@@ -36,13 +36,6 @@ Item {
     // What did not fit takes a slot at the trailing end; the time keeps
     // the middle of the rest.
     readonly property int spare: ModuleService.overflow > 0 ? ModuleService.overflowWidth : 0
-
-    ClockModule {
-        anchors.centerIn: parent
-        anchors.horizontalCenterOffset: -root.spare / 2
-        width: root.activities.length > 0 ? ModuleService.clockCore : parent.width
-        height: Theme.capsuleHeight
-    }
 
     Segment {
         id: leading
