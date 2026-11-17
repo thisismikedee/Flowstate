@@ -17,17 +17,25 @@ import "../../services"
 // in the pill; in the glance it is the large time at the far end, with the
 // day and the date under it. It is never hidden and re-shown: a single
 // `morph` (0 at rest, 1 in the glance) drives its size and its place, so it
-// glides and grows with the island instead of swapping.
+// glides and grows with the island instead of swapping. The control centre
+// is the one exception to growing: there the time stays small and slides
+// to the top row's left end, taking the duplicate clock's spot.
 //
-// One animated value only. Every size and position below is a pure function
-// of `morph` (and the island's own size, which morphs on the same clock),
-// so nothing fights: the island's width and height already animate on
-// `Theme.durationMorph`, and this rides them.
+// One animated value per motion. Every size and position below is a pure
+// function of `morph` and `slide` (and the island's own size, which morphs
+// on the same clock), so nothing fights: the island's width and height
+// already animate on `Theme.durationMorph`, and this rides them.
 Item {
     id: root
 
     // True while the island shows the glance (the pointer resting on it).
     property bool summary: false
+    // True while the control centre is open: the time slides, small, to
+    // the top row's left end and takes the duplicate clock's spot there.
+    property bool controls: false
+    // The island's panel padding, so the slide target is the panel
+    // content's own top-left rather than a guessed offset.
+    property int panelPad: 0
     // False while the island shows an OSD or a notification in place of the
     // clock. A panel no longer hides it: the time stays put.
     property bool shown: true
@@ -41,6 +49,15 @@ Item {
     property real morph: root.summary ? 1 : 0
 
     Behavior on morph {
+        NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
+    }
+
+    // Slides the time to the control centre's top row and back, on the
+    // island's own morph clock. Never runs together with the glance morph
+    // (opening a panel clears the summary), so the two offsets simply add.
+    property real slide: root.controls ? 1 : 0
+
+    Behavior on slide {
         NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
     }
 
@@ -76,9 +93,12 @@ Item {
     readonly property real hourSize: Theme.fontSizeRegular + (62 - Theme.fontSizeRegular) * root.morph
 
     // The width and height at each end, from the type itself so they track
-    // the growing hour; the middle is the straight line between them.
+    // the growing hour; the middle is the straight line between them. The
+    // rest date fades out as the time docks in the control centre, so the
+    // docked time is the hour alone, as the duplicate was; the width
+    // follows it, so the battery keeps its place.
     readonly property real restW: hour.implicitWidth
-        + (SettingsService.clockShowsDate ? 8 + restDate.implicitWidth : 0)
+        + (SettingsService.clockShowsDate ? (8 + restDate.implicitWidth) * (1 - root.slide) : 0)
     readonly property real sumW: Math.max(hour.implicitWidth,
         root.dated ? weekday.implicitWidth : 0,
         root.dated ? date.implicitWidth : 0)
@@ -94,7 +114,16 @@ Item {
     // glide follows the growth.
     readonly property real restX: parent.width / 2 - root.spare / 2 - width / 2
     readonly property real sumX: parent.width - root.margin - 4 - width
+    // The control centre's top row, in island coordinates: the panel
+    // content's top-left, where the duplicate time sat. The panel loader
+    // starts below the pill band (`panelPad + notchPad + capsuleHeight`),
+    // and the row is `rowHeight` tall with the time centred in it, its
+    // left edge the row's own left margin (4).
+    readonly property real controlsX: root.panelPad + 4
+    readonly property real controlsY: root.panelPad + root.notchPad + Theme.capsuleHeight
+        + ControlsService.rowHeight / 2 - height / 2
     x: root.restX + (root.sumX - root.restX) * root.morph
+        + (root.controlsX - root.restX) * root.slide
 
     // Centred in the pill band at the top at rest — anchored to the pill's
     // own height, not the island's current height, so the time stays put
@@ -103,6 +132,7 @@ Item {
     readonly property real restY: (Theme.capsuleHeight + root.notchPad - height) / 2
     readonly property real sumY: root.slotCenterY - height / 2
     y: root.restY + (root.sumY - root.restY) * root.morph
+        + (root.controlsY - root.restY) * root.slide
 
     opacity: root.shown ? 1 : 0
 
@@ -164,6 +194,6 @@ Item {
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSizeSmall
         color: root.inkMuted
-        opacity: SettingsService.clockShowsDate ? 1 - root.morph : 0
+        opacity: SettingsService.clockShowsDate ? (1 - root.morph) * (1 - root.slide) : 0
     }
 }

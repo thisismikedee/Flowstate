@@ -35,10 +35,11 @@ ColumnLayout {
 
     readonly property bool editing: ControlsService.editing
 
-    // True while the island's time travels large over this panel: the
+    // True while the island's time is docked in this panel's top row: the
     // panel's own top-row time stays hidden, so the island's time is the
-    // only one. The battery in the top row stays.
-    property bool timeLarge: false
+    // only one — but it keeps its place in the row, so the battery does
+    // not slide over into its spot. The battery in the top row stays.
+    property bool timeDocked: false
 
     spacing: ControlsService.rowGap
 
@@ -99,13 +100,19 @@ ColumnLayout {
                 visible: (ControlsService.topClock || ControlsService.topBattery) && !root.editing
 
                 Text {
-                    visible: ControlsService.topClock && !root.timeLarge
+                    // Hidden while the island's time is docked here, but
+                    // still laid out: it reserves the time's width, so the
+                    // battery keeps its place to the right of the docked
+                    // time. Its size matches the island's time at rest, so
+                    // the reserved width is exactly the docked time's.
+                    visible: ControlsService.topClock || root.timeDocked
+                    opacity: root.timeDocked ? 0 : 1
                     anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatDateTime(openClock.date, SettingsService.clockShowsSeconds
                         ? SettingsService.clockFormat.replace("mm", "mm:ss")
                         : SettingsService.clockFormat)
                     font.family: Theme.fontFamily
-                    font.pixelSize: Theme.fontSizeLarge
+                    font.pixelSize: Theme.fontSizeRegular
                     font.weight: Font.DemiBold
                     font.features: { "tnum": 1 }
                     color: Theme.text
