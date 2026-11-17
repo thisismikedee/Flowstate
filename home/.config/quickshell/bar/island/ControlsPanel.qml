@@ -121,7 +121,7 @@ ColumnLayout {
                     color: Theme.text
                 }
 
-                // The battery, drawn in Liquid Glass and flown in from the
+                // The battery, drawn flat and 2D and flown in from the
                 // centre: on Super+A it spawns around the centre of the
                 // expanded state and travels left to land beside the
                 // docked time, at the same moment the time docks — both
@@ -137,20 +137,30 @@ ColumnLayout {
                     implicitWidth: batteryFly.width
                     implicitHeight: batteryFly.height
 
-                    // 0 at rest, 1 docked in the top row. Starts at 0
-                    // and is set on completion, so a freshly created
-                    // panel flies the battery in; closing the panel
-                    // drives it back to 0, so it flows back toward the
-                    // centre and fades instead of vanishing. On the
-                    // island's own morph clock, the same as the time's
-                    // slide, so the two land together.
-                    property real travel: 0
+                    // 0 at rest, 1 docked in the top row. A binding, like
+                    // the time's `slide`, so it follows `root.timeDocked`
+                    // reactively: the battery appears every time the
+                    // control centre opens and flows back every time it
+                    // closes, whatever the panel's creation timing. It is
+                    // gated by `ready`, which flips true once in
+                    // `Component.onCompleted`, so a freshly created panel
+                    // starts at 0 and flies in (the Behavior animates
+                    // the 0→1) rather than being born at 1 with no
+                    // motion. A one-shot onCompleted assignment alone
+                    // froze `travel` at its creation-time value: if the
+                    // panel was created while the control centre was not
+                    // yet docked, the battery stayed invisible for that
+                    // panel's whole life. On the island's own morph
+                    // clock, the same as the time's slide, so the two
+                    // land together.
+                    property bool ready: false
+                    property real travel: batterySlot.ready ? (root.timeDocked ? 1 : 0) : 0
 
                     Behavior on travel {
                         NumberAnimation { duration: Theme.durationMorph; easing.type: Theme.easing }
                     }
 
-                    Component.onCompleted: batterySlot.travel = root.timeDocked ? 1 : 0
+                    Component.onCompleted: batterySlot.ready = true
 
                     // The spawn: the visual's centre on the panel's
                     // centre. The slot's final place in the panel is
@@ -166,13 +176,13 @@ ColumnLayout {
                     Item {
                         id: batteryFly
 
-                        width: liquid.width + 4 + percentText.implicitWidth
-                        height: Math.max(liquid.height, percentText.implicitHeight)
+                        width: flat.width + 4 + percentText.implicitWidth
+                        height: Math.max(flat.height, percentText.implicitHeight)
                         x: (1 - batterySlot.travel) * batterySlot.spawnX
                         opacity: batterySlot.travel
 
-                        LiquidBattery {
-                            id: liquid
+                        FlatBattery {
+                            id: flat
 
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -180,7 +190,7 @@ ColumnLayout {
                         Text {
                             id: percentText
 
-                            anchors.left: liquid.right
+                            anchors.left: flat.right
                             anchors.leftMargin: 4
                             anchors.verticalCenter: parent.verticalCenter
                             text: `${BatteryService.percent}%`
