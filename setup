@@ -426,6 +426,25 @@ put() {
     act $SUDO mv -f "$dst.impasto-new" "$dst"
 }
 
+# The copy trusts the checkout's file modes, and a checkout whose modes were
+# flattened — a tar copy, a filesystem without exec bits — installs the helper
+# scripts as 644. Quickshell runs them directly (LauncherService's
+# applications.py, and every other service's script), so a shell installed
+# that way finds no apps and no data, with nothing in the log saying why.
+# The repository's own modes are the truth: restore the exec bit on every
+# installed file git tracks as executable, after the copy, before the shell
+# reloads. Files already executable are left alone and unreported.
+restore_modes() {
+    local tree=$1 target=$2 shown=$3 mode rel
+    while read -r mode _ _ rel; do
+        [[ $mode == 100755 ]] || continue
+        rel=${rel#"$tree/"}
+        [[ -f $target/$rel && ! -x $target/$rel ]] || continue
+        act $SUDO chmod a+x "$target/$rel"
+        say "fixed    $shown$rel — the executable bit was missing"
+    done < <(git -C "$REPO" ls-files -s -- "$tree" 2>/dev/null)
+}
+
 # Moves whatever was in the way into the backups. Files under / are copied
 # instead, since the backup directory belongs to this user.
 keep_aside() {
@@ -547,6 +566,10 @@ deploy() {
             say "left     $shown$rel — gone from the repository, but edited here"; said=1
         fi
     done
+
+    # A flattened checkout copies the scripts as 644; put the exec bit back
+    # on what the repository tracks as executable, before the shell reloads.
+    restore_modes "$tree" "$target" "$shown"
 
     if (( declined )); then
         local verb=sync
